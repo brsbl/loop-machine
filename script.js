@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
   const instrumentTracksContainer =
     document.querySelector(".instrument-tracks");
-  const playButton = document.getElementById("play-button");
-  const stopButton = document.getElementById("stop-button");
+  // const playButton = document.getElementById("play-button"); // Remove old ref
+  // const stopButton = document.getElementById("stop-button"); // Remove old ref
+  const playStopButton = document.getElementById("play-stop-button"); // New ref
   const instrumentsData = [
     { name: "hi hat", id: "hihat", path: "808 Samples/hi hat.wav" },
     { name: "snare", id: "snare", path: "808 Samples/snare.wav" },
@@ -21,6 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let nextNoteTime = 0.0;
   let scheduleAheadTime = 0.1; // How far ahead to schedule audio (sec)
   let timerID;
+  // New variables for visual playhead
+  let startTime;
+  let lastVisualStep = -1;
+  let animationFrameId;
 
   // --- Initialize Audio Context --- (Must be started by user gesture, e.g., play button)
   function initAudio() {
@@ -35,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Load Audio Samples ---
   async function loadSounds() {
     console.log("Loading sounds...");
+    playStopButton.disabled = true; // Ensure disabled while loading
     for (const instrument of instrumentsData) {
       try {
         const response = await fetch(instrument.path);
@@ -49,9 +55,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     console.log("All sounds loaded (or attempted).");
-    // Enable play button only after sounds are loaded (or attempted)
-    console.log("LOADSOUNDS: Setting playButton.disabled = false");
-    playButton.disabled = false;
+    console.log("LOADSOUNDS: Setting playStopButton.disabled = false");
+    playStopButton.disabled = false;
   }
 
   // --- Setup Gain/Effect Nodes (Initial Setup) ---
@@ -250,97 +255,129 @@ document.addEventListener("DOMContentLoaded", () => {
   function runScheduler() {
     if (Object.keys(audioBuffers).length < instrumentsData.length) {
       console.warn("runScheduler: Buffers not loaded yet.");
-      playButton.disabled = true; // Ensure play stays disabled
-      stopButton.disabled = true;
+      playStopButton.disabled = true; // Ensure playStopButton is disabled
       return;
     }
+    if (isPlaying) return; // Prevent starting if already playing
 
     console.log("runScheduler: Starting the loop.");
     isPlaying = true;
-    console.log(
-      "runScheduler: Setting playButton.disabled=true, stopButton.disabled=false"
-    );
-    playButton.disabled = true; // Disable play when playing
-    stopButton.disabled = false; // Enable stop when playing
-    currentStep = 0;
-    nextNoteTime = audioContext.currentTime + 0.1; // Start scheduling slightly ahead
-    scheduler();
+    playStopButton.classList.add("playing");
+    currentStep = 0; // Reset sequence position
+    startTime = audioContext.currentTime; // Record start time for visual sync
+    nextNoteTime = startTime; // Start scheduling immediately
+    lastVisualStep = -1; // Reset visual step tracker
+    scheduler(); // Start audio scheduling loop
+    requestAnimationFrame(updatePlayheadVisuals); // Start visual loop
   }
 
   function startLoop() {
-    console.log("STARTLOOP: Entered function. isPlaying:", isPlaying);
-    if (isPlaying) return;
-
-    // Ensure context exists first
-    if (!audioContext) {
-      console.error("STARTLOOP: AudioContext does not exist!");
-      return;
-    }
-
-    // Check buffers are loaded (can be done here or in runScheduler)
-    if (Object.keys(audioBuffers).length < instrumentsData.length) {
-      console.warn("STARTLOOP: Audio buffers not loaded yet.");
-      playButton.disabled = true;
-      stopButton.disabled = true;
-      return;
-    }
-
-    // Handle context state
-    if (audioContext.state === "running") {
-      console.log("STARTLOOP: Context already running. Calling runScheduler.");
-      runScheduler();
-    } else if (audioContext.state === "suspended") {
-      console.log("STARTLOOP: Context suspended. Attempting resume...");
-      audioContext
-        .resume()
-        .then(() => {
-          console.log("STARTLOOP: Resume successful. Calling runScheduler.");
-          runScheduler(); // Call the scheduler AFTER resume completes
-        })
-        .catch((err) => console.error("Error resuming AudioContext:", err));
-    } else {
-      console.error(
-        `STARTLOOP: AudioContext in unexpected state: ${audioContext.state}`
-      );
-    }
+    // This function is now less necessary, logic moved to runScheduler and the click handler
+    // but we keep it conceptually for now if needed elsewhere.
+    // The main logic is now in the click handler.
+    console.log("startLoop called (mostly handled by click listener now)");
   }
 
   function stopLoop() {
     console.log("STOPLOOP: Entered function. isPlaying:", isPlaying);
     if (!isPlaying) return;
     isPlaying = false;
-    console.log(
-      "STOPLOOP: Setting playButton.disabled=false, stopButton.disabled=true"
-    );
-    playButton.disabled = false; // Enable play when stopped
-    stopButton.disabled = true; // Disable stop when stopped
-    window.clearTimeout(timerID);
-    // Optional: Stop any currently playing sounds immediately (can cause clicks)
-    // instrumentsData.forEach(inst => effectNodes[inst.id]?.mainGain.gain.cancelScheduledValues(audioContext.currentTime));
+    playStopButton.classList.remove("playing");
+    window.clearTimeout(timerID); // Stop audio scheduling
+    cancelAnimationFrame(animationFrameId); // Stop visual loop
+    // Clear the last highlighted step
+    if (lastVisualStep !== -1) {
+      clearStepHighlight(lastVisualStep);
+    }
     console.log("Loop stopped.");
-    // Maybe suspend audio context if not needed?
-    // if (audioContext) audioContext.suspend();
   }
 
-  // --- Event Listeners ---
-  playButton.addEventListener("click", startLoop);
-  stopButton.addEventListener("click", stopLoop);
+  function clearStepHighlight(stepIndex) {
+    document
+      .querySelectorAll(`.note-button[data-step="${stepIndex}"]`)
+      .forEach((btn) => {
+        btn.classList.remove("playing-step");
+      });
+  }
 
-  // Disable play button initially until sounds are loaded
-  playButton.disabled = true;
-  stopButton.disabled = true; // Also disable stop initially
+  function highlightStep(stepIndex) {
+    document
+      .querySelectorAll(`.note-button[data-step="${stepIndex}"]`)
+      .forEach((btn) => {
+        btn.classList.add("playing-step");
+      });
+  }
+
+  // Visual update loop using requestAnimationFrame
+  function updatePlayheadVisuals() {
+    if (!isPlaying) return;
+
+    const loopDuration = steps * stepTime;
+    const timeWithinLoop =
+      (audioContext.currentTime - startTime) % loopDuration;
+    const visualStep = Math.floor(timeWithinLoop / stepTime);
+
+    if (visualStep !== lastVisualStep) {
+      if (lastVisualStep !== -1) {
+        clearStepHighlight(lastVisualStep);
+      }
+      highlightStep(visualStep);
+      lastVisualStep = visualStep;
+    }
+
+    // Continue the loop
+    animationFrameId = requestAnimationFrame(updatePlayheadVisuals);
+  }
+
+  // Single Event Listener for the new button
+  playStopButton.addEventListener("click", () => {
+    if (isPlaying) {
+      stopLoop();
+    } else {
+      // Logic from the old startLoop, ensuring context is ready/resumed
+      console.log("PlayStop Click: Attempting to start.");
+      if (!audioContext) {
+        console.error("PlayStop Click: AudioContext does not exist!");
+        return;
+      }
+      if (Object.keys(audioBuffers).length < instrumentsData.length) {
+        console.warn("PlayStop Click: Audio buffers not loaded yet.");
+        return; // Don't start if buffers aren't loaded
+      }
+
+      if (audioContext.state === "running") {
+        console.log("PlayStop Click: Context running. Calling runScheduler.");
+        runScheduler();
+      } else if (audioContext.state === "suspended") {
+        console.log("PlayStop Click: Context suspended. Attempting resume...");
+        audioContext
+          .resume()
+          .then(() => {
+            console.log(
+              "PlayStop Click: Resume successful. Calling runScheduler."
+            );
+            runScheduler();
+          })
+          .catch((err) => console.error("Error resuming AudioContext:", err));
+      } else {
+        console.error(
+          `PlayStop Click: AudioContext in unexpected state: ${audioContext.state}`
+        );
+      }
+    }
+  });
+
+  // Disable button initially until sounds are loaded
+  // playButton.disabled = true; // Remove old logic
+  // stopButton.disabled = true; // Remove old logic
+  playStopButton.disabled = true; // Disable the new button initially
+  // console.log("INIT: End of setup. Initial button states: play disabled=", playButton.disabled, "stop disabled=", stopButton.disabled); // Remove old log
   console.log(
-    "INIT: End of setup. Initial button states: play disabled=",
-    playButton.disabled,
-    "stop disabled=",
-    stopButton.disabled
+    "INIT: End of setup. Initial button state: playStop disabled=",
+    playStopButton.disabled
   );
 
-  // Try to initialize audio context early if possible (might still require user gesture)
-  // initAudio(); // OLD Position
-  // Better to init on first play click. <== This comment was misleading!
-
   // Initialize audio immediately after UI setup
-  initAudio(); // MOVED HERE
-  console.log("INIT: Called initAudio() to start loading sounds."); // ADDED LOG
+  initAudio();
+  // console.log("INIT: Called initAudio() to start loading sounds."); // Keep or remove as needed
 });
