@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loop Machine</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="loop-machine">
+      <div class="controls">
+        <button id="play-button">play loop</button>
+        <button id="stop-button">stop loop</button>
+      </div>
+
+      <div class="sequencer">
+        <div class="measure-labels">
+          <div class="measure-label">1</div>
+          <div class="measure-label">2</div>
+          <div class="measure-label">3</div>
+          <div class="measure-label">4</div>
+        </div>
+        <div class="instrument-tracks">
+          <!-- Instrument Rows will be added here by JS or defined statically -->
+        </div>
+      </div>
+
+      <div class="effects-labels">
+        <div class="effect-label reverb-label">REVERB</div>
+        <div class="effect-label delay-label">DELAY</div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

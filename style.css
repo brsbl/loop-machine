@@ -1,0 +1,247 @@
+/* Reset default styles for consistency */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: sans-serif;
+  background-color: #f8f8f8;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Align items to the top */
+  padding-top: 50px; /* Add some padding at the top */
+  min-height: 100vh;
+  margin: 0;
+}
+
+.loop-machine {
+  display: grid;
+  grid-template-areas:
+    "controls measure-labels effects-labels"
+    "controls instrument-tracks instrument-tracks";
+  grid-template-columns: auto 1fr auto; /* Adjust columns */
+  gap: 10px 20px; /* Row gap, Column gap */
+  align-items: center; /* Vertically center items within grid cells */
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 800px; /* Give it a minimum width */
+}
+
+/* --- CONTROLS (Play/Stop) --- */
+.controls {
+  grid-area: controls;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-self: start; /* Align controls to the top of their grid area */
+  margin-top: 60px; /* Add margin to push controls down */
+}
+
+.controls button {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  background-color: #eee;
+  border-radius: 15px; /* Make buttons oval */
+  cursor: pointer;
+  font-size: 0.9em;
+  min-width: 80px;
+  text-align: center;
+}
+
+.controls button:hover {
+  background-color: #ddd;
+}
+
+/* --- SEQUENCER AREA --- */
+.sequencer {
+  grid-area: instrument-tracks; /* Occupies the main track area */
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  /* Add background for the note area if needed */
+}
+
+.measure-labels {
+  grid-area: measure-labels;
+  display: grid;
+  grid-template-columns: repeat(
+    4,
+    1fr
+  ); /* Distribute space within fixed width */
+  background-color: #fdfaf1;
+  padding: 5px 0;
+  /* border-radius: 5px; */ /* Reverted */
+  margin-bottom: 5px;
+  margin-left: 91px; /* User edited this from 80px */
+  width: 635px; /* Explicit width: 16*35 + 15*5 */
+  border-radius: 4px; /* User added */
+  border: 1px solid #f7edc4; /* User added */
+  box-sizing: border-box;
+}
+
+.measure-label {
+  text-align: left; /* Align label to the start of the column */
+  font-weight: bold; /* Fixed by assistant */
+  color: #555;
+  font-size: 0.9em;
+  margin-left: 15px; /* User edited this */
+}
+
+.instrument-tracks {
+  /* This is now implicitly handled by the .sequencer grid-area */
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Space between instrument rows */
+}
+
+.instrument-track-row {
+  display: flex;
+  align-items: center;
+  gap: 20px; /* Gap between label, notes, sliders */
+}
+
+/* --- INSTRUMENT LABEL --- */
+.instrument-label {
+  width: 60px; /* Fixed width for labels */
+  text-align: center;
+  font-size: 0.8em;
+  color: #666;
+  background-color: #f5f2e9;
+  padding: 5px;
+  border-radius: 10px;
+  border: 1px solid #e0dccc;
+}
+
+/* --- NOTE BUTTONS --- */
+.notes-container {
+  display: flex;
+  gap: 5px; /* Space between note buttons */
+}
+
+.note-button {
+  width: 35px;
+  height: 25px;
+  border: 1px solid #ccc;
+  background-color: #eee; /* Default inactive */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.note-button.beat-start {
+  /* Optional: slightly different style for the start of each beat */
+  /* border-left: 2px solid #bbb; */
+}
+
+.note-button.active {
+  /* Style for active buttons, colors based on image */
+}
+
+/* Specific active colors */
+[data-instrument="hihat"] .note-button.active {
+  background-color: #f87070; /* Reddish */
+  border-color: #e06060;
+}
+
+[data-instrument="snare"] .note-button.active {
+  background-color: #f8d070; /* Yellowish */
+  border-color: #e0b860;
+}
+
+[data-instrument="kick"] .note-button.active {
+  background-color: #70f870; /* Greenish */
+  border-color: #60e060;
+}
+
+/* --- EFFECTS AREA --- */
+.effects-labels {
+  grid-area: effects-labels;
+  display: flex;
+  gap: 20px; /* Match slider gap */
+  align-self: end; /* Align labels to the bottom */
+  padding-bottom: 5px; /* Align with top of sliders */
+  margin-left: 20px; /* Align with start of sliders */
+}
+
+.effect-label {
+  font-size: 0.8em;
+  font-weight: bold;
+  color: #555;
+  width: 100px; /* Match slider width */
+  text-align: center;
+}
+
+.sliders-container {
+  display: flex;
+  gap: 20px; /* Gap between reverb and delay sliders */
+  align-items: center;
+}
+
+.slider-wrapper {
+  width: 100px; /* Fixed width for sliders */
+  /* Styles for the wrapper if needed */
+}
+
+.effect-slider {
+  width: 100%;
+  cursor: pointer;
+  margin: 0; /* Remove default margin */
+  appearance: none; /* Override default look */
+  height: 8px;
+  background: #ddd;
+  border-radius: 5px;
+  outline: none;
+}
+
+/* Slider Thumb Styling (Chrome/Edge/Safari) */
+.effect-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 20px;
+  background: #aaa;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid #888;
+}
+
+/* Slider Thumb Styling (Firefox) */
+.effect-slider::-moz-range-thumb {
+  width: 14px;
+  height: 18px;
+  background: #aaa;
+  border-radius: 3px;
+  cursor: pointer;
+  border: 1px solid #888;
+}
+
+/* Specific Thumb Colors based on image */
+[data-instrument="hihat"] .reverb-slider::-webkit-slider-thumb {
+  background: #e4c078; /* Gold-ish */
+  border-color: #b89a5f;
+}
+[data-instrument="hihat"] .reverb-slider::-moz-range-thumb {
+  background: #e4c078; /* Gold-ish */
+  border-color: #b89a5f;
+}
+
+[data-instrument="snare"] .reverb-slider::-webkit-slider-thumb {
+  background: #e4c078; /* Gold-ish */
+  border-color: #b89a5f;
+}
+[data-instrument="snare"] .reverb-slider::-moz-range-thumb {
+  background: #e4c078; /* Gold-ish */
+  border-color: #b89a5f;
+}
+
+[data-instrument="kick"] .reverb-slider::-webkit-slider-thumb {
+  background: #e4c078; /* Gold-ish */
+  border-color: #b89a5f;
+}
+[data-instrument="kick"] .reverb-slider::-moz-range-thumb {
+  background: #e4c078; /* Gold-ish */
+  border-color: #b89a5f;
+}
