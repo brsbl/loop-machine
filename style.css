@@ -14,6 +14,7 @@ body {
   padding-top: 50px; /* Add some padding at the top */
   min-height: 100vh;
   margin: 0;
+  overflow-x: hidden; /* Prevent horizontal scrollbar during transition */
 }
 
 .loop-machine {
@@ -24,18 +25,19 @@ body {
   grid-template-columns: auto 1fr auto;
   gap: 0px 20px; /* Reduced row gap to 5px */
   align-items: center;
-  background-color: #f5f5f5;
+  background-color: #f9f6ecd0;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   min-width: 800px;
+  position: relative; /* Re-added for positioning the toggle */
 }
 
 /* Style the button now inside the instrument row */
 #play-stop-button {
   padding: 8px;
-  border: 2px solid #b0b0b0;
-  background-color: #ff4500;
+  border: 3px solid #eadede;
+  background-color: #fb7051;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9em;
@@ -64,6 +66,7 @@ body {
 
 #play-stop-button:hover {
   filter: brightness(1.1); /* Slightly brighten on hover */
+  background-color: #f97051;
 }
 
 /* Style for when playing */
@@ -98,22 +101,22 @@ body {
   /* grid-template-columns: repeat(4, 1fr); */ /* Distribute 4 labels */
   grid-template-columns: repeat(4, 155px); /* Width of 4 steps + 3 gaps */
   column-gap: 5px; /* Match gap between step groups */
-  background-color: #fdfaf1;
+  background-color: #7ca6ab;
   padding: 5px 0;
   border-radius: 3px;
   margin-bottom: 3px;
   margin-left: 100px;
   width: 635px;
-  border: 1px solid #f7edc4;
   box-sizing: border-box;
+  /* Removed box-shadow */
 }
 
 .beat-label {
   /* text-align: center; */ /* Center the beat number */
   text-align: left; /* Align to the start of the group */
   font-weight: bold;
-  color: #555;
-  font-size: 0.9em;
+  color: #e3e3e3;
+  font-size: 0.8em;
   padding-left: 5px; /* Add some padding for visual alignment */
 }
 
@@ -123,13 +126,11 @@ body {
   display: grid;
   grid-template-columns: repeat(16, 35px);
   column-gap: 5px;
-  /* background-color: #E0E0E0; */ /* Removed background */
   padding: 2px 0 5px 0;
   border-radius: 3px;
   margin-bottom: 5px;
   margin-left: 100px; /* Align with beat labels and notes */
   width: 635px; /* Align with beat labels and notes */
-  /* border: 1px solid #b0b0b0; */ /* Remove border, use separators only */
   box-sizing: border-box;
 }
 
@@ -137,16 +138,12 @@ body {
 .step-label {
   text-align: center;
   font-weight: normal;
-  color: #333;
-  font-size: 0.6em;
-  border-right: 1px solid #b0b0b0; /* Separator */
+  color: #6e6d6d; /* Slightly darker text for contrast */
+  font-size: 0.4em;
+  padding-bottom: 4px;
   padding-top: 4px;
-  /* Add background for individual step label if needed */
-  /* background-color: #eee; */
-}
-
-.step-label:last-child {
-  border-right: none;
+  background-color: #f8f0e2; /* Light background for deboss */
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.05); /* Inner shadow */
 }
 
 .instrument-tracks {
@@ -171,8 +168,7 @@ body {
   background-color: #ffa940f4; /* DarkOrange */
   padding: 8px 4px;
   border-radius: 4px; /* Keep slightly rounded corners */
-  box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.5),
-    0 1px 2px rgba(0, 0, 0, 0.3); /* Inner highlight/outer shadow */
+  box-shadow: inset 0 0 3px #ffffff80, 0 1px 2px rgba(0, 0, 0, 0.3); /* Inner highlight/outer shadow */
   border: 2px solid #fab867; /* Slightly lighter orange border */
   text-transform: uppercase;
   font-weight: bold;
@@ -188,46 +184,38 @@ body {
 .note-button {
   width: 35px;
   height: 25px;
-  border: 1px solid #ccc;
-  background-color: #eee; /* Default inactive */
+  border: 1px solid #d8d8d8;
+  background-color: #eeeeee; /* Default inactive */
+  box-shadow: inset 0 0 3px #ffffff80, 0 1px 2px rgba(0, 0, 0, 0.1); /* Inner highlight/outer shadow */
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.1s ease, filter 0.05s ease-out,
     transform 0.05s ease-out; /* Add filter/transform */
 }
 
-.note-button.beat-start {
-  /* Optional: slightly different style for the start of each beat */
-  /* border-left: 2px solid #bbb; */
-}
-
-.note-button.active {
-  background-color: #edeaea;
-  /* Remove box-shadow to remove embossed effect */
-  /* box-shadow: inset -1px -1px 3px rgba(0, 0, 0, 0.3), */ /* Dark top/left shadow (raised) */
-  /* inset 1px 1px 3px rgba(255, 255, 255, 0.7); */ /* Light bottom/right highlight (raised) */
-}
-
 /* Specific active colors - Apply OVER the general active styles */
 [data-instrument="hihat"] .note-button.active {
-  background-color: #ff4141; /* Reddish */
-  border-color: #e06060;
+  background-color: #ff5858; /* Reddish */
+  border-color: #f97070;
+  box-shadow: inset 0 0 6px #ffffffb3; /* Added inner glow */
   /* You can adjust the base color if needed to enhance the shadow */
 }
 
 [data-instrument="snare"] .note-button.active {
-  background-color: #f8d070; /* Yellowish */
-  border-color: #e0b860;
+  background-color: #f7d65e; /* Yellowish */
+  border-color: #e0d360;
+  box-shadow: inset 0 0 6px #ffffc8cc; /* Added inner glow */
 }
 
 [data-instrument="kick"] .note-button.active {
-  background-color: #70f870; /* Greenish */
+  background-color: #49ce49; /* Greenish */
   border-color: #60e060;
+  box-shadow: inset 0 0 6px #c8ffc8cc; /* Added inner glow */
 }
 
 /* Hover states (only when not active) */
 .note-button:not(.active):hover {
-  box-shadow: inset 0 0 6px 2px rgba(236, 230, 230, 0.533);
+  box-shadow: inset 0 0 6px 2px #fff5f588;
 }
 
 [data-instrument="hihat"] .note-button:not(.active):hover {
@@ -263,15 +251,17 @@ body {
 .effect-label {
   font-size: 0.8em;
   font-weight: bold;
-  color: #ff8c00; /* Orange text */
+  color: #7ca6ab; /* Orange text */
   width: 100px; /* Keep fixed width */
   text-align: center;
-  background-color: #2f4f4f; /* DarkSlateGray background */
-  padding: 6px 0; /* Restore padding */
-  border-radius: 3px; /* Slightly rounded corners */
-  border: 1px solid #466e6e; /* Slightly lighter teal border */
+  background-color: #f8f0e2; /* DarkSlateGray background */
+  padding: 4px 0; /* Restore padding */
+  border-radius: 2px; /* Slightly rounded corners */
+  border: 1px solid #f6ecdb; /* Slightly lighter teal border */
   text-transform: uppercase;
-  line-height: 1.2;
+  line-height: 1.1;
+  margin-top: 56px;
+  margin-bottom: -56px;
 }
 
 .sliders-container {
@@ -290,7 +280,7 @@ body {
   margin: 0;
   appearance: none;
   height: 8px;
-  background: #ddd;
+  background: #edebeb;
   border-radius: 5px;
   outline: none;
 }
@@ -304,7 +294,9 @@ body {
   border-radius: 3px;
   cursor: pointer;
   border: 1px solid #888;
-  margin-top: 0;
+  margin-top: 0; /* Adjusted to align better if needed */
+  box-shadow: 0 1px 3px #00000066,
+    /* Bottom shadow */ inset 0 1px 0 rgba(255, 255, 255, 0.5); /* Top highlight */
 }
 
 .effect-slider::-moz-range-thumb {
@@ -314,7 +306,8 @@ body {
   border-radius: 3px; /* Restore original radius */
   cursor: pointer;
   border: 1px solid #888; /* Restore original border */
-  /* box-shadow: 0 1px 2px rgba(0,0,0,0.2); */ /* Remove custom shadow */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4),
+    /* Bottom shadow */ inset 0 1px 0 rgba(255, 255, 255, 0.5); /* Top highlight */
 }
 
 /* Specific Thumb Colors based on image */
@@ -355,3 +348,245 @@ body {
   justify-content: center;
   padding-right: 15px; /* Keep padding from last positioning */
 }
+
+/* --- Sidebar & Layout --- */
+#toggle-sidebar-button {
+  position: absolute;
+  top: 18px;
+  left: 16px;
+  z-index: 1001;
+  width: 44px;
+  height: 24px;
+  /* Flatter background for deboss (Off State) */
+  background: #5f6266; /* Slightly lighter grey */
+  border: 1px solid #888; /* Slightly lighter border */
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  padding: 0;
+  font-size: 0;
+  color: transparent;
+  /* Debossed shadow */
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.3),
+    /* Inner dark shadow */ inset -1px -1px 1px rgba(255, 255, 255, 0.2); /* Inner light highlight */
+}
+
+/* Inner circle */
+#toggle-sidebar-button::before {
+  content: "";
+  position: absolute;
+  top: 2px; /* Adjust positioning slightly */
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  background: #b7b7b7; /* Darker circle (Off State) */
+  border-radius: 50%;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  /* Shadow for circle inside deboss */
+  box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.7),
+    1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Styles when sidebar is visible (toggle is "on") */
+body.sidebar-visible #toggle-sidebar-button {
+  /* Flatter background (On State) */
+  background: #dcdcdc; /* Lighter grey */
+  border-color: #bbb;
+  /* Debossed shadow (On State) */
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2),
+    /* Inner dark shadow */ inset -1px -1px 1px rgba(255, 255, 255, 0.5); /* Inner light highlight */
+}
+
+body.sidebar-visible #toggle-sidebar-button::before {
+  /* Lighter circle (On State) */
+  background: #eee;
+  transform: translateX(
+    20px
+  ); /* Adjusted for new width: 40 - 16 - 2 - 2 = 20 */
+  /* Shadow for circle (On State) */
+  box-shadow: inset -1px 1px 1.5px #ffffff33,
+    /* Inner dark shadow */ inset -1.5px -1px 1px #0000004d; /* Inner light highlight */
+}
+
+#toggle-sidebar-button:hover {
+  filter: brightness(1.05); /* Keep hover effect */
+}
+
+#reset-button {
+  padding: 6px;
+  background-color: #f0ebe0; /* Match Apply button background */
+  color: #555; /* Darker text */
+  border-top: 1px solid #fff;
+  border-left: 1px solid #fff;
+  border-right: 1px solid #aaa;
+  border-bottom: 1px solid #aaa;
+  border-radius: 8px; /* Slightly less rounded */
+  cursor: pointer;
+  font-size: 0.4em; /* Smaller font */
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.7),
+    1px 1px 2px rgba(0, 0, 0, 0.2);
+  margin-left: 66px;
+  margin-top: 17px;
+}
+
+#reset-button:hover {
+  background-color: #e8e3d8;
+}
+
+#reset-button:active {
+  background-color: #e0dace;
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2);
+  border-top: 1px solid #aaa;
+  border-left: 1px solid #aaa;
+  border-right: 1px solid #fff;
+  border-bottom: 1px solid #fff;
+}
+
+.settings-container {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+}
+
+#sidebar {
+  position: fixed;
+  top: 0;
+  left: -300px; /* Start hidden */
+  width: 250px;
+  height: 100vh;
+  background-color: #f9f6ecd0; /* Match loop machine background */
+  color: #333; /* Darker text for light background */
+  padding: 20px;
+  z-index: 1000;
+  transition: left 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e0d8c1; /* Add subtle border */
+}
+
+#sidebar h3 {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* New style for the JSON editor title */
+.json-editor-title {
+  /* Inherit font-size, font-weight from h3 */
+  color: #f97d1e; /* Match beat label text color */
+  padding: 8px 0; /* Adjust padding slightly */
+  border-radius: 3px;
+  text-align: center;
+  font-weight: bold; /* Make it bold like effect label */
+  /* Removed fixed width */
+}
+
+/* Style the new pre/code editor */
+#json-editor {
+  display: block; /* Make code block behave like the old textarea */
+  flex-grow: 1; /* Take available space */
+  background-color: #f8f0e2; /* Match step label background */
+  color: #333; /* Default text color */
+  border: 1px solid #d8d8d8; /* Match note button border */
+  border-radius: 4px;
+  padding: 10px;
+  font-family: monospace;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.05); /* Match step label shadow */
+  white-space: pre; /* Ensure whitespace is respected */
+  overflow: auto; /* Add scrollbars if content overflows */
+  outline: none; /* Remove default focus outline */
+}
+
+/* Syntax Highlighting Styles - Updated Again */
+#json-editor .json-punctuation {
+  color: #888;
+} /* Default punctuation (comma, colon) */
+#json-editor .json-punctuation-bracket {
+  color: #3242d4;
+} /* Blue for Brackets [] */
+#json-editor .json-punctuation-brace {
+  color: #3242d4;
+} /* Blue for Braces {} */
+
+#json-editor .json-key {
+  color: #777777; /* Default key color (e.g., "notes", "reverb", "delay") */
+  font-weight: normal;
+}
+#json-editor .json-key-hihat {
+  color: #b72626;
+} /* Specific color for hihat */
+#json-editor .json-key-snare {
+  color: #b4962b;
+} /* Specific color for snare */
+#json-editor .json-key-kick {
+  color: #128f12;
+} /* Specific color for kick */
+
+#json-editor .json-string {
+  color: #e1b060; /* Should only apply to actual string values if any */
+}
+#json-editor .json-number {
+  color: #7a1dbc; /* Purple for Note numbers (0/1) */
+}
+#json-editor .json-number-effect {
+  color: #19afb2; /* Navy Blue for reverb/delay values */
+}
+
+#apply-json-button {
+  padding: 8px 12px; /* Adjusted padding */
+  background-color: #f0ebe0; /* Light beige background */
+  color: #333; /* Darker text */
+  border-top: 1px solid #fff; /* White top border */
+  border-left: 1px solid #fff; /* White left border */
+  border-right: 1px solid #aaa; /* Grey right border */
+  border-bottom: 1px solid #aaa; /* Grey bottom border */
+  border-radius: 5px; /* Slightly more rounded */
+  cursor: pointer;
+  font-weight: normal; /* Normal weight text */
+  text-transform: none; /* No uppercase */
+  /* 3D Bevel Shadow */
+  box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.7),
+    /* Inner highlight */ 1px 1px 2px rgba(0, 0, 0, 0.2); /* Outer shadow */
+  /* Remove previous shadow if any */
+}
+
+#apply-json-button:hover {
+  background-color: #e8e3d8; /* Slightly darker on hover */
+  filter: none; /* Remove brightness filter */
+}
+
+#apply-json-button:active {
+  /* Add active state */
+  background-color: #e0dace; /* Slightly darker when pressed */
+  box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.2); /* Inset shadow */
+  border-top: 1px solid #aaa;
+  border-left: 1px solid #aaa;
+  border-right: 1px solid #fff;
+  border-bottom: 1px solid #fff;
+}
+
+.main-container {
+  margin-left: 0;
+  transition: margin-left 0.3s ease-in-out;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 50px;
+}
+
+/* State when sidebar is visible */
+body.sidebar-visible #sidebar {
+  left: 0;
+}
+
+body.sidebar-visible .main-container {
+  margin-left: 258px;
+}
+
+/* Adjust loop-machine position if needed when sidebar opens */
+/* .loop-machine might not need changes if main-container handles centering */
