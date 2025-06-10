@@ -133,10 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const button = document.createElement("button");
       button.classList.add("note-button");
       button.dataset.step = i;
-      // Add visual grouping for beats
-      if (i % 4 === 0) {
-        button.classList.add("beat-start");
-      }
+      // Visual grouping handled by CSS grid spacing
 
       button.addEventListener("click", () => {
         sequenceState[instrument.id][i] = !sequenceState[instrument.id][i];

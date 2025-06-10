@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Loop Machine</title>
+    <title>Roland TR-909 Rhythm Composer</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -14,52 +14,127 @@
     </div>
 
     <div class="main-container">
-      <div class="loop-machine">
-        <div class="settings-container">
-          <button id="toggle-sidebar-button"></button>
-          <button id="reset-button">RESET</button>
-        </div>
-        <div class="controls">
-          <button id="play-stop-button">
-            <div class="button-text-line">START</div>
-            <div class="button-separator"></div>
-            <div class="button-text-line">STOP</div>
-          </button>
-        </div>
-
-        <div class="sequencer">
-          <div class="beat-labels">
-            <div class="beat-label">1</div>
-            <div class="beat-label">2</div>
-            <div class="beat-label">3</div>
-            <div class="beat-label">4</div>
+      <div class="tr909-machine">
+        <!-- Header Section -->
+        <div class="header-section">
+          <div class="roland-brand">Roland</div>
+          <div class="model-title">
+            <div class="model-name">TR-909</div>
+            <div class="model-subtitle">RHYTHM COMPOSER</div>
           </div>
-          <div class="measure-labels">
-            <div class="step-label">1</div>
-            <div class="step-label">2</div>
-            <div class="step-label">3</div>
-            <div class="step-label">4</div>
-            <div class="step-label">5</div>
-            <div class="step-label">6</div>
-            <div class="step-label">7</div>
-            <div class="step-label">8</div>
-            <div class="step-label">9</div>
-            <div class="step-label">10</div>
-            <div class="step-label">11</div>
-            <div class="step-label">12</div>
-            <div class="step-label">13</div>
-            <div class="step-label">14</div>
-            <div class="step-label">15</div>
-            <div class="step-label">16</div>
-          </div>
-          <div class="instrument-tracks">
-            <!-- Instrument Rows will be added here by JS or defined statically -->
+          <div class="settings-container">
+            <button id="toggle-sidebar-button"></button>
+            <button id="reset-button">RESET</button>
           </div>
         </div>
 
-        <div class="effects-labels">
-          <div class="effect-label reverb-label">REVERB</div>
-          <div class="effect-label delay-label">DELAY</div>
+        <!-- Knobs Section -->
+        <div class="knobs-section">
+          <div class="knobs-row">
+            <div class="knob-group">
+              <div class="knob-labels-row">
+                <span class="knob-label">LEVEL</span>
+                <span class="knob-label">TUNE</span>
+                <span class="knob-label">LEVEL</span>
+                <span class="knob-label">TUNE</span>
+                <span class="knob-label">LEVEL</span>
+                <span class="knob-label">TUNE</span>
+                <span class="knob-label">LEVEL</span>
+                <span class="knob-label">TUNE</span>
+                <span class="knob-label">LEVEL</span>
+                <span class="knob-label">TUNE</span>
+                <span class="knob-label">LEVEL</span>
+                <span class="knob-label">TUNE</span>
+                <span class="knob-label">LEVEL</span>
+                <span class="knob-label">TUNE</span>
+                <span class="knob-label">LEVEL</span>
+                <span class="knob-label">TUNE</span>
+                <span class="knob-label">LEVEL</span>
+              </div>
+              <div class="knobs-controls-row">
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob"></div>
+                <div class="knob volume-knob"></div>
+              </div>
+            </div>
+            <div class="pattern-controls">
+              <div class="pattern-buttons">
+                <button class="pattern-btn orange">1</button>
+                <button class="pattern-btn orange">2</button>
+                <button class="pattern-btn orange">3</button>
+                <button class="pattern-btn orange">4</button>
+              </div>
+              <div class="tempo-control">
+                <div class="tempo-label">TEMPO</div>
+                <div class="knob tempo-knob"></div>
+              </div>
+              <div class="control-buttons">
+                <button id="play-stop-button" class="control-btn">
+                  <div class="button-text-line">START</div>
+                  <div class="button-separator"></div>
+                  <div class="button-text-line">STOP</div>
+                </button>
+                <button class="shuffle-btn">SHUFFLE</button>
+                <button class="write-btn gray">WRITE</button>
+                <button class="write-btn gray">READ</button>
+                <button class="write-btn gray">real time</button>
+                <button class="write-btn gray">step time</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sequencer Section -->
+        <div class="sequencer-section">
+          <div class="step-buttons">
+            <div class="step-button" data-step="1">1</div>
+            <div class="step-button" data-step="2">2</div>
+            <div class="step-button" data-step="3">3</div>
+            <div class="step-button" data-step="4">4</div>
+            <div class="step-button" data-step="5">5</div>
+            <div class="step-button" data-step="6">6</div>
+            <div class="step-button" data-step="7">7</div>
+            <div class="step-button" data-step="8">8</div>
+            <div class="step-button" data-step="9">9</div>
+            <div class="step-button" data-step="10">10</div>
+            <div class="step-button" data-step="11">11</div>
+            <div class="step-button" data-step="12">12</div>
+            <div class="step-button" data-step="13">13</div>
+            <div class="step-button" data-step="14">14</div>
+            <div class="step-button" data-step="15">15</div>
+            <div class="step-button" data-step="16">16</div>
+          </div>
+          <div class="drum-controls">
+            <div class="drum-labels">
+              <div class="drum-label">BASS DRUM</div>
+              <div class="drum-label">SNARE DRUM</div>
+              <div class="drum-label">LOW TOM</div>
+              <div class="drum-label">MID TOM</div>
+              <div class="drum-label">HI TOM</div>
+              <div class="drum-label">RIM SHOT</div>
+              <div class="drum-label">HAND CLAP</div>
+              <div class="drum-label">CLOSED HI-HAT</div>
+              <div class="drum-label">OPEN HI-HAT</div>
+              <div class="drum-label">CRASH CYMBAL</div>
+            </div>
+            <div class="instrument-tracks">
+              <!-- Instrument Rows will be added here by JS -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
