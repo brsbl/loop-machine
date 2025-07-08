@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky install"
   },
   "keywords": ["drum-machine", "sequencer", "web-audio"],
   "author": "",
@@ -30,11 +31,16 @@
   },
   "jest": {
     "testEnvironment": "jsdom",
+    "transform": {
+      "^.+\\\\.js$": "babel-jest"
+    },
+    "transformIgnorePatterns": [],
     "collectCoverageFrom": [
       "*.js",
       "!**/node_modules/**",
       "!**/coverage/**",
-      "!jest.config.js"
+      "!jest.config.js",
+      "!.husky/**"
     ]
   },
   "lint-staged": {
