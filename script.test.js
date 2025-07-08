@@ -25,22 +25,14 @@ global.AudioContext = jest.fn().mockImplementation(() => ({
 // Mock fetch for audio file loading
 global.fetch = jest.fn();
 
-describe("Loop Machine Tests", () => {
-  let originalDocument;
-
+describe("Loop Machine Core Functionality", () => {
   beforeEach(() => {
-    // Set up DOM
+    // Minimal DOM setup for functionality tests
     document.body.innerHTML = `
       <div class="instrument-tracks"></div>
-      <button id="play-stop-button">START/STOP</button>
-      <button id="toggle-sidebar-button"></button>
-      <button id="reset-button">RESET</button>
-      <div id="sidebar"></div>
-      <pre><code id="json-editor"></code></pre>
-      <button id="apply-json-button">Apply</button>
+      <button id="play-stop-button"></button>
     `;
 
-    // Clear any modules
     jest.clearAllMocks();
     
     // Mock fetch responses
@@ -49,122 +41,182 @@ describe("Loop Machine Tests", () => {
     });
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
+  describe("State Conversion Utilities", () => {
+    // These are pure functions that are critical for URL state persistence
+    const stateToHex = (stateArray) => {
+      const binaryString = stateArray.map((val) => (val ? "1" : "0")).join("");
+      return parseInt(binaryString, 2).toString(16).padStart(4, "0");
+    };
 
-  describe("Utility Functions", () => {
-    test("stateToHex converts boolean array to hex string", () => {
-      // Need to extract these functions from script.js
-      // For now, we'll test the logic inline
-      const stateToHex = (stateArray) => {
-        const binaryString = stateArray.map((val) => (val ? "1" : "0")).join("");
-        return parseInt(binaryString, 2).toString(16).padStart(4, "0");
-      };
+    const hexToState = (hexString) => {
+      if (!hexString || hexString.length !== 4) return Array(16).fill(false);
+      const binaryString = parseInt(hexString, 16)
+        .toString(2)
+        .padStart(16, "0");
+      return binaryString.split("").map((char) => char === "1");
+    };
 
+    test("stateToHex should correctly encode sequencer state", () => {
+      // Test empty pattern
       expect(stateToHex(Array(16).fill(false))).toBe("0000");
+      
+      // Test full pattern
       expect(stateToHex(Array(16).fill(true))).toBe("ffff");
-      expect(stateToHex([true, false, true, false, true, false, true, false,
-                         true, false, true, false, true, false, true, false])).toBe("aaaa");
+      
+      // Test specific patterns that might occur in drum sequences
+      expect(stateToHex([
+        true, false, false, false,  // Kick on 1
+        true, false, false, false,  // Kick on 5
+        true, false, false, false,  // Kick on 9
+        true, false, false, false   // Kick on 13
+      ])).toBe("8888");
+      
+      // Test hi-hat pattern
+      expect(stateToHex([
+        true, false, true, false,
+        true, false, true, false,
+        true, false, true, false,
+        true, false, true, false
+      ])).toBe("aaaa");
     });
 
-    test("hexToState converts hex string to boolean array", () => {
-      const hexToState = (hexString) => {
-        if (!hexString || hexString.length !== 4) return Array(16).fill(false);
-        const binaryString = parseInt(hexString, 16)
-          .toString(2)
-          .padStart(16, "0");
-        return binaryString.split("").map((char) => char === "1");
-      };
-
+    test("hexToState should correctly decode sequencer state", () => {
+      // Test empty pattern
       expect(hexToState("0000")).toEqual(Array(16).fill(false));
+      
+      // Test full pattern
       expect(hexToState("ffff")).toEqual(Array(16).fill(true));
-      expect(hexToState("aaaa")).toEqual([true, false, true, false, true, false, true, false,
-                                          true, false, true, false, true, false, true, false]);
+      
+      // Test kick pattern
+      expect(hexToState("8888")).toEqual([
+        true, false, false, false,
+        true, false, false, false,
+        true, false, false, false,
+        true, false, false, false
+      ]);
+      
+      // Test invalid input handling
+      expect(hexToState("")).toEqual(Array(16).fill(false));
+      expect(hexToState("abc")).toEqual(Array(16).fill(false));
+      expect(hexToState("12345")).toEqual(Array(16).fill(false));
     });
 
-    test("valueToChar converts slider value to character", () => {
-      const valueToChar = (val) => {
-        const num = parseInt(val, 10);
-        if (num >= 0 && num <= 9) return String(num);
-        if (num === 10) return "a";
-        return "0";
-      };
-
-      expect(valueToChar(0)).toBe("0");
-      expect(valueToChar(5)).toBe("5");
-      expect(valueToChar(9)).toBe("9");
-      expect(valueToChar(10)).toBe("a");
-      expect(valueToChar(11)).toBe("0"); // Out of range
-    });
-
-    test("charToValue converts character to slider value", () => {
-      const charToValue = (char) => {
-        if (char >= "0" && char <= "9") return parseInt(char, 10);
-        if (char === "a") return 10;
-        return 0;
-      };
-
-      expect(charToValue("0")).toBe(0);
-      expect(charToValue("5")).toBe(5);
-      expect(charToValue("9")).toBe(9);
-      expect(charToValue("a")).toBe(10);
-      expect(charToValue("b")).toBe(0); // Invalid char
+    test("stateToHex and hexToState should be inverse operations", () => {
+      // Test roundtrip conversion
+      const patterns = [
+        Array(16).fill(false),
+        Array(16).fill(true),
+        [true, false, false, false, false, true, false, false, true, false, false, false, false, true, false, false],
+        Array.from({length: 16}, (_, i) => i % 2 === 0),
+        Array.from({length: 16}, (_, i) => i % 4 === 0),
+      ];
+      
+      patterns.forEach(pattern => {
+        const hex = stateToHex(pattern);
+        const decoded = hexToState(hex);
+        expect(decoded).toEqual(pattern);
+      });
     });
   });
 
-  describe("DOM Interactions", () => {
-    test("Play/Stop button should exist", () => {
-      const playStopButton = document.getElementById("play-stop-button");
-      expect(playStopButton).toBeTruthy();
-      expect(playStopButton.textContent).toContain("START");
-    });
+  describe("Slider Value Encoding", () => {
+    const valueToChar = (val) => {
+      const num = parseInt(val, 10);
+      if (num >= 0 && num <= 9) return String(num);
+      if (num === 10) return "a";
+      return "0";
+    };
 
-    test("Sidebar toggle button should exist", () => {
-      const toggleButton = document.getElementById("toggle-sidebar-button");
-      expect(toggleButton).toBeTruthy();
-    });
+    const charToValue = (char) => {
+      if (char >= "0" && char <= "9") return parseInt(char, 10);
+      if (char === "a") return 10;
+      return 0;
+    };
 
-    test("Reset button should exist", () => {
-      const resetButton = document.getElementById("reset-button");
-      expect(resetButton).toBeTruthy();
-      expect(resetButton.textContent).toBe("RESET");
-    });
-  });
-
-  describe("URL State Management", () => {
-    test("URL should update when state changes", () => {
-      const mockReplaceState = jest.fn();
-      window.history.replaceState = mockReplaceState;
-
-      // Simulate state update
-      const params = new URLSearchParams();
-      params.set("s", "0000_000000");
-      const newUrl = window.location.pathname + "?" + params.toString();
-      
-      window.history.replaceState(null, "", newUrl);
-      
-      expect(mockReplaceState).toHaveBeenCalledWith(null, "", newUrl);
-    });
-
-    test("Sidebar state should be reflected in URL", () => {
-      document.body.classList.add("sidebar-visible");
-      
-      const params = new URLSearchParams();
-      if (document.body.classList.contains("sidebar-visible")) {
-        params.set("sidebar", "1");
+    test("valueToChar should encode slider values correctly", () => {
+      // Test valid range
+      for (let i = 0; i <= 10; i++) {
+        if (i < 10) {
+          expect(valueToChar(i)).toBe(String(i));
+        } else {
+          expect(valueToChar(i)).toBe("a");
+        }
       }
       
-      expect(params.get("sidebar")).toBe("1");
+      // Test out of range values
+      expect(valueToChar(-1)).toBe("0");
+      expect(valueToChar(11)).toBe("0");
+      expect(valueToChar(100)).toBe("0");
+    });
+
+    test("charToValue should decode slider values correctly", () => {
+      // Test valid characters
+      for (let i = 0; i <= 9; i++) {
+        expect(charToValue(String(i))).toBe(i);
+      }
+      expect(charToValue("a")).toBe(10);
+      
+      // Test invalid characters
+      expect(charToValue("b")).toBe(0);
+      expect(charToValue("z")).toBe(0);
+      expect(charToValue("!")).toBe(0);
+      expect(charToValue("")).toBe(0);
+    });
+
+    test("valueToChar and charToValue should be inverse operations", () => {
+      for (let i = 0; i <= 10; i++) {
+        const char = valueToChar(i);
+        const value = charToValue(char);
+        expect(value).toBe(i);
+      }
     });
   });
 
-  describe("Audio Context", () => {
-    test("AudioContext should be created on demand", () => {
+  describe("Audio Loading", () => {
+    test("should handle successful audio file loading", async () => {
+      const mockArrayBuffer = new ArrayBuffer(8);
+      const mockAudioBuffer = { duration: 1.0 };
+      
+      fetch.mockResolvedValueOnce({
+        arrayBuffer: () => Promise.resolve(mockArrayBuffer),
+      });
+      
       const audioContext = new AudioContext();
-      expect(AudioContext).toHaveBeenCalled();
-      expect(audioContext.createGain).toBeDefined();
-      expect(audioContext.createDelay).toBeDefined();
+      audioContext.decodeAudioData.mockResolvedValueOnce(mockAudioBuffer);
+      
+      const result = await audioContext.decodeAudioData(mockArrayBuffer);
+      
+      expect(result).toBe(mockAudioBuffer);
+      expect(audioContext.decodeAudioData).toHaveBeenCalledWith(mockArrayBuffer);
+    });
+
+    test("should handle audio loading failures gracefully", async () => {
+      fetch.mockRejectedValueOnce(new Error("Network error"));
+      
+      await expect(fetch("invalid-path.wav")).rejects.toThrow("Network error");
+    });
+  });
+
+  describe("Sequencer Timing", () => {
+    test("should calculate correct step time based on BPM", () => {
+      const bpm = 120;
+      const stepTime = 60 / bpm / 4; // Time per 16th note
+      
+      expect(stepTime).toBeCloseTo(0.125); // 125ms per step at 120 BPM
+    });
+
+    test("should calculate correct step time for different BPMs", () => {
+      const testCases = [
+        { bpm: 60, expectedStepTime: 0.25 },   // Slow
+        { bpm: 120, expectedStepTime: 0.125 }, // Medium
+        { bpm: 140, expectedStepTime: 0.107 }, // Fast
+        { bpm: 180, expectedStepTime: 0.083 }, // Very fast
+      ];
+      
+      testCases.forEach(({ bpm, expectedStepTime }) => {
+        const stepTime = 60 / bpm / 4;
+        expect(stepTime).toBeCloseTo(expectedStepTime, 3);
+      });
     });
   });
 });

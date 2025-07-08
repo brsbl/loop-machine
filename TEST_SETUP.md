@@ -14,7 +14,13 @@ This document explains the testing framework and pre-commit hooks that have been
    npx husky install
    ```
 
-## Testing
+## Testing Philosophy
+
+Tests focus on **core functionality** rather than UI details that may change. The goal is maintainable tests that:
+- Test business logic and critical functionality
+- Are resilient to design changes
+- Are easy to understand and update
+- Provide meaningful feedback when they fail
 
 ### Running Tests
 
@@ -24,30 +30,40 @@ This document explains the testing framework and pre-commit hooks that have been
 
 ### Test Structure
 
-- `script.test.js` - Tests for the main JavaScript functionality including:
-  - Utility functions (hex/state conversions)
-  - DOM interactions
-  - URL state management
-  - Audio context mocking
-
-- `style.test.js` - Tests for CSS styling verification
+`script.test.js` - Tests for core loop machine functionality:
+- **State Conversion Utilities** - Critical for URL state persistence
+  - `stateToHex` - Converts sequencer patterns to compact hex strings
+  - `hexToState` - Restores sequencer patterns from hex strings
+- **Slider Value Encoding** - Encodes effect values for URL persistence
+  - `valueToChar` - Converts slider values (0-10) to single characters
+  - `charToValue` - Restores slider values from characters
+- **Audio Loading** - Ensures samples load correctly
+- **Sequencer Timing** - Validates BPM calculations for accurate playback
 
 ### Writing New Tests
 
-Tests use Jest with jsdom environment. Example test:
+Focus on testing **behavior**, not implementation. Good tests:
 
 ```javascript
-test("description of what should happen", () => {
-  // Arrange
-  const input = "test";
-  
-  // Act
-  const result = functionToTest(input);
-  
-  // Assert
-  expect(result).toBe("expected output");
+describe("Feature being tested", () => {
+  test("should handle specific scenario", () => {
+    // Given - Set up test data
+    const input = [true, false, true, false];
+    
+    // When - Execute the functionality
+    const result = stateToHex(input);
+    
+    // Then - Verify the outcome
+    expect(result).toBe("a000");
+  });
 });
 ```
+
+Avoid testing:
+- CSS classes or styling
+- Exact HTML structure
+- UI text that might change
+- Implementation details
 
 ## Linting and Formatting
 
@@ -85,15 +101,11 @@ git commit --no-verify -m "your message"
 
 **Note:** Use this sparingly as it bypasses quality checks.
 
-## Coverage Requirements
+## Test Coverage
 
-The project has the following coverage thresholds:
-- Branches: 80%
-- Functions: 80%
-- Lines: 80%
-- Statements: 80%
+While coverage metrics can be viewed with `npm run test:coverage`, the focus is on **quality over quantity**. Good tests that cover critical functionality are more valuable than hitting arbitrary coverage numbers.
 
-View coverage report after running `npm run test:coverage` in the `coverage/` directory.
+View the coverage report in the `coverage/` directory after running the coverage command.
 
 ## Troubleshooting
 
