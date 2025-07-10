@@ -1,0 +1,8 @@
+node_modules/
+coverage/
+808 Samples/
+BPB Cassette 909/
+*.wav
+*.WAV
+*.mp3
+*.jpg
