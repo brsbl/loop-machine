@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
-import { StateManager } from './StateManager.js';
-import { CONFIG } from './config.js';
+import { StateManager } from '../src/components/StateManager.js';
+import { CONFIG } from '../src/config/config.js';
 
 describe('StateManager', () => {
   let stateManager;

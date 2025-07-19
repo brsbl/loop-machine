@@ -1,6 +1,5 @@
 export default {
   testEnvironment: 'jsdom',
-  extensionsToTreatAsEsm: ['.js'],
   moduleNameMapper: {
     '^(\\.{1,2}/.*)\\.js$': '$1',
   },
@@ -16,11 +15,13 @@ export default {
     }],
   },
   collectCoverageFrom: [
-    '*.js',
+    'src/**/*.js',
     '!**/node_modules/**',
     '!**/coverage/**',
     '!jest.config.js',
     '!babel.config.js',
-    '!script.js', // Exclude old script
+  ],
+  testMatch: [
+    '<rootDir>/tests/**/*.test.js'
   ],
 };

@@ -1,8 +1,8 @@
-import { AudioManager } from './AudioManager.js';
-import { StateManager } from './StateManager.js';
-import { UIManager } from './UIManager.js';
-import { Sequencer } from './Sequencer.js';
-import { UrlStateHandler } from './UrlStateHandler.js';
+import { AudioManager } from './components/AudioManager.js';
+import { StateManager } from './components/StateManager.js';
+import { UIManager } from './components/UIManager.js';
+import { Sequencer } from './components/Sequencer.js';
+import { UrlStateHandler } from './components/UrlStateHandler.js';
 
 /**
  * Main application class that coordinates all components

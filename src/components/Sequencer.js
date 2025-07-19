@@ -1,4 +1,4 @@
-import { CONFIG, STEP_TIME } from './config.js';
+import { CONFIG, STEP_TIME } from '../config/config.js';
 
 /**
  * Manages sequencer playback and timing
