@@ -2,6 +2,7 @@
   "env": {
     "browser": true,
     "es2021": true,
+    "node": true,
     "jest": true
   },
   "extends": [
@@ -15,10 +16,14 @@
   },
   "plugins": ["jest"],
   "rules": {
-    "no-console": "warn",
+    "no-console": "off",
     "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "prefer-const": "error",
-    "no-var": "error"
+    "no-var": "error",
+    "no-inner-declarations": "off"
   },
-  "ignorePatterns": ["node_modules/", "coverage/", "808 Samples/", "BPB Cassette 909/"]
+  "ignorePatterns": ["node_modules/", "coverage/", "808 Samples/", "BPB Cassette 909/"],
+  "globals": {
+    "global": "readonly"
+  }
 }

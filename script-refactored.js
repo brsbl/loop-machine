@@ -1,0 +1,87 @@
+import { AudioManager } from './AudioManager.js';
+import { StateManager } from './StateManager.js';
+import { UIManager } from './UIManager.js';
+import { Sequencer } from './Sequencer.js';
+import { UrlStateHandler } from './UrlStateHandler.js';
+
+/**
+ * Main application class that coordinates all components
+ */
+class LoopMachine {
+  constructor() {
+    this.audioManager = new AudioManager();
+    this.stateManager = new StateManager();
+    this.uiManager = new UIManager(this.stateManager, this.audioManager);
+    this.sequencer = new Sequencer(this.stateManager, this.audioManager, this.uiManager);
+    this.urlStateHandler = new UrlStateHandler(this.stateManager, this.uiManager);
+    
+    this.init();
+  }
+
+  /**
+   * Initialize the application
+   */
+  async init() {
+    console.log("Initializing Loop Machine...");
+    
+    // Initialize audio context
+    this.audioManager.init();
+    
+    // Initialize UI
+    this.uiManager.init();
+    this.uiManager.setPlayButtonEnabled(false);
+    
+    // Set up event handlers
+    this.setupEventHandlers();
+    
+    // Load audio samples
+    try {
+      await this.audioManager.loadSounds();
+      this.uiManager.setPlayButtonEnabled(true);
+      console.log("Audio loading complete");
+    } catch (error) {
+      console.error("Failed to load audio:", error);
+      alert("Failed to load audio samples. Please refresh the page.");
+      return;
+    }
+    
+    // Load state from URL
+    this.loadUrlState();
+  }
+
+  /**
+   * Set up event handlers for UI callbacks
+   */
+  setupEventHandlers() {
+    // Handle URL state changes
+    this.uiManager.onUrlStateChange = () => {
+      this.urlStateHandler.updateUrl();
+    };
+    
+    // Handle play/stop button
+    const playButton = document.getElementById("play-stop-button");
+    playButton.addEventListener("click", () => {
+      this.sequencer.toggle();
+    });
+    
+    // Handle reset functionality in UI
+    const originalReset = this.uiManager.reset.bind(this.uiManager);
+    this.uiManager.reset = () => {
+      this.sequencer.stop();
+      originalReset();
+    };
+  }
+
+  /**
+   * Load state from URL with retry logic
+   */
+  loadUrlState() {
+    this.urlStateHandler.loadFromUrl(() => this.loadUrlState());
+  }
+}
+
+// Initialize the application when DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM Content Loaded - Starting Loop Machine");
+  window.loopMachine = new LoopMachine();
+});

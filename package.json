@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A web-based loop machine/drum sequencer",
   "main": "script.js",
+  "type": "module",
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch",
@@ -27,15 +28,6 @@
     "jest-environment-jsdom": "^29.7.0",
     "lint-staged": "^15.0.0",
     "prettier": "^3.0.3"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "collectCoverageFrom": [
-      "*.js",
-      "!**/node_modules/**",
-      "!**/coverage/**",
-      "!jest.config.js"
-    ]
   },
   "lint-staged": {
     "*.js": [

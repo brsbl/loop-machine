@@ -15,13 +15,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const stepTime = 60 / bpm / 4; // Time per 16th note
 
   let audioContext;
-  let audioBuffers = {};
-  let effectNodes = {}; // To store gain, delay, reverb nodes per instrument
-  let sequenceState = {};
+  const audioBuffers = {};
+  const effectNodes = {}; // To store gain, delay, reverb nodes per instrument
+  const sequenceState = {};
   let currentStep = 0;
   let isPlaying = false;
   let nextNoteTime = 0.0;
-  let scheduleAheadTime = 0.1; // How far ahead to schedule audio (sec)
+  const scheduleAheadTime = 0.1; // How far ahead to schedule audio (sec)
   let timerID;
   // New variables for visual playhead
   let startTime;

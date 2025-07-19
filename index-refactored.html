@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loop Machine</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="sidebar">
+      <div class="json-editor-title">JSON State</div>
+      <pre><code id="json-editor" contenteditable="true" spellcheck="false"></code></pre>
+      <button id="apply-json-button">Apply Changes</button>
+    </div>
+
+    <div class="main-container">
+      <div class="loop-machine">
+        <div class="settings-container">
+          <button id="toggle-sidebar-button"></button>
+          <button id="reset-button">RESET</button>
+        </div>
+        <div class="controls">
+          <button id="play-stop-button">
+            <div class="button-text-line">START</div>
+            <div class="button-separator"></div>
+            <div class="button-text-line">STOP</div>
+          </button>
+        </div>
+
+        <div class="sequencer">
+          <div class="beat-labels">
+            <div class="beat-label">1</div>
+            <div class="beat-label">2</div>
+            <div class="beat-label">3</div>
+            <div class="beat-label">4</div>
+          </div>
+          <div class="measure-labels">
+            <div class="step-label">1</div>
+            <div class="step-label">2</div>
+            <div class="step-label">3</div>
+            <div class="step-label">4</div>
+            <div class="step-label">5</div>
+            <div class="step-label">6</div>
+            <div class="step-label">7</div>
+            <div class="step-label">8</div>
+            <div class="step-label">9</div>
+            <div class="step-label">10</div>
+            <div class="step-label">11</div>
+            <div class="step-label">12</div>
+            <div class="step-label">13</div>
+            <div class="step-label">14</div>
+            <div class="step-label">15</div>
+            <div class="step-label">16</div>
+          </div>
+          <div class="instrument-tracks">
+            <!-- Instrument Rows will be added here by JS -->
+          </div>
+        </div>
+
+        <div class="effects-labels">
+          <div class="effect-label reverb-label">REVERB</div>
+          <div class="effect-label delay-label">DELAY</div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="script-refactored.js"></script>
+  </body>
+</html>
