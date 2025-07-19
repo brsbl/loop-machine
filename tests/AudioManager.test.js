@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
-import { AudioManager } from './AudioManager.js';
-import { CONFIG } from './config.js';
+import { AudioManager } from '../src/components/AudioManager.js';
+import { CONFIG } from '../src/config/config.js';
 
 // Mock AudioContext
 global.AudioContext = jest.fn().mockImplementation(() => ({

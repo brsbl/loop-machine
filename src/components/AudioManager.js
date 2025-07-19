@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js';
+import { CONFIG } from '../config/config.js';
 
 /**
  * Manages audio context, buffer loading, and effect nodes

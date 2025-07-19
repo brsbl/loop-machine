@@ -22,9 +22,9 @@ export const CONFIG = {
   
   // Instrument definitions
   INSTRUMENTS: [
-    { name: "hi hat", id: "hihat", path: "808 Samples/hi hat (30).wav" },
-    { name: "snare", id: "snare", path: "808 Samples/snare.wav" },
-    { name: "kick", id: "kick", path: "808 Samples/kick.wav" },
+    { name: "hi hat", id: "hihat", path: "../assets/samples/808 Samples/hi hat (30).wav" },
+    { name: "snare", id: "snare", path: "../assets/samples/808 Samples/snare.wav" },
+    { name: "kick", id: "kick", path: "../assets/samples/808 Samples/kick.wav" },
   ],
   
   // UI Configuration
