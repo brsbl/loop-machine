@@ -1,4 +1,4 @@
-import { CONFIG, STEP_TIME } from '../config/config.js';
+import { SEQUENCER, STEP_TIME, INSTRUMENTS } from '../constants/index.js';
 
 /**
  * Manages sequencer playback and timing
@@ -92,9 +92,9 @@ export class Sequencer {
     const audioContext = this.audioManager.getContext();
     const state = this.stateManager.getState();
     
-    while (this.nextNoteTime < audioContext.currentTime + CONFIG.SCHEDULE_AHEAD_TIME) {
+    while (this.nextNoteTime < audioContext.currentTime + SEQUENCER.SCHEDULE_AHEAD_TIME) {
       // Schedule notes for the current step
-      CONFIG.INSTRUMENTS.forEach((instrument) => {
+      INSTRUMENTS.forEach((instrument) => {
         if (state[instrument.id][this.currentStep]) {
           console.log(
             `Scheduling ${instrument.id} at step ${this.currentStep}, ` +
@@ -106,11 +106,11 @@ export class Sequencer {
 
       // Advance to the next step
       this.nextNoteTime += STEP_TIME;
-      this.currentStep = (this.currentStep + 1) % CONFIG.STEPS;
+      this.currentStep = (this.currentStep + 1) % SEQUENCER.STEPS;
     }
     
     // Schedule next check
-    this.timerID = window.setTimeout(() => this.scheduler(), CONFIG.SCHEDULER_INTERVAL);
+    this.timerID = window.setTimeout(() => this.scheduler(), SEQUENCER.SCHEDULER_INTERVAL);
   }
 
   /**
@@ -120,7 +120,7 @@ export class Sequencer {
     if (!this.isPlaying) return;
     
     const audioContext = this.audioManager.getContext();
-    const loopDuration = CONFIG.STEPS * STEP_TIME;
+    const loopDuration = SEQUENCER.STEPS * STEP_TIME;
     const timeWithinLoop = (audioContext.currentTime - this.startTime) % loopDuration;
     const visualStep = Math.floor(timeWithinLoop / STEP_TIME);
     

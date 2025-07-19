@@ -1,4 +1,4 @@
-import { CONFIG } from '../config/config.js';
+import { INSTRUMENTS, EFFECTS } from '../constants/index.js';
 
 /**
  * Manages audio context, buffer loading, and effect nodes
@@ -37,7 +37,7 @@ export class AudioManager {
    */
   isReady() {
     return this.audioContext && 
-           Object.keys(this.audioBuffers).length === CONFIG.INSTRUMENTS.length;
+           Object.keys(this.audioBuffers).length === INSTRUMENTS.length;
   }
 
   /**
@@ -47,7 +47,7 @@ export class AudioManager {
   async loadSounds() {
     console.log("Loading sounds...");
     
-    const loadPromises = CONFIG.INSTRUMENTS.map(async (instrument) => {
+    const loadPromises = INSTRUMENTS.map(async (instrument) => {
       try {
         const response = await fetch(instrument.path);
         const arrayBuffer = await response.arrayBuffer();
@@ -125,13 +125,13 @@ export class AudioManager {
     const sliderValue = parseInt(value, 10);
 
     if (effectType === 'reverb') {
-      const reverbAmount = sliderValue / CONFIG.SLIDER_MAX * CONFIG.REVERB.MAX_AMOUNT;
+      const reverbAmount = sliderValue / EFFECTS.SLIDER_MAX * EFFECTS.REVERB.MAX_AMOUNT;
       nodes.reverb.gain.setValueAtTime(reverbAmount, this.audioContext.currentTime);
       console.log(`${instrumentId} reverb set to ${reverbAmount}`);
     } else if (effectType === 'delay') {
-      const delayTime = (sliderValue / CONFIG.SLIDER_MAX) * CONFIG.DELAY.MAX_TIME;
-      const feedbackAmount = (sliderValue / CONFIG.SLIDER_MAX) * CONFIG.DELAY.MAX_FEEDBACK;
-      const wetAmount = (sliderValue / CONFIG.SLIDER_MAX) * CONFIG.DELAY.MAX_WET;
+      const delayTime = (sliderValue / EFFECTS.SLIDER_MAX) * EFFECTS.DELAY.MAX_TIME;
+      const feedbackAmount = (sliderValue / EFFECTS.SLIDER_MAX) * EFFECTS.DELAY.MAX_FEEDBACK;
+      const wetAmount = (sliderValue / EFFECTS.SLIDER_MAX) * EFFECTS.DELAY.MAX_WET;
       
       nodes.delay.delayTime.setValueAtTime(delayTime, this.audioContext.currentTime);
       nodes.delayFeedback.gain.setValueAtTime(feedbackAmount, this.audioContext.currentTime);

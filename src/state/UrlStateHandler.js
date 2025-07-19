@@ -1,4 +1,4 @@
-import { CONFIG } from '../config/config.js';
+import { URL_PARAMS } from '../constants/index.js';
 
 /**
  * Handles URL state persistence and loading
@@ -17,11 +17,11 @@ export class UrlStateHandler {
     const compactState = this.stateManager.generateCompactState(sliderValues);
     
     const params = new URLSearchParams();
-    params.set(CONFIG.URL_PARAM_SEQUENCER, compactState);
+    params.set(URL_PARAMS.SEQUENCER, compactState);
     
     // Add sidebar state
     if (document.body.classList.contains("sidebar-visible")) {
-      params.set(CONFIG.URL_PARAM_SIDEBAR, "1");
+      params.set(URL_PARAMS.SIDEBAR, "1");
     }
     
     const newUrl = window.location.pathname + "?" + params.toString();
@@ -38,7 +38,7 @@ export class UrlStateHandler {
     const params = new URLSearchParams(window.location.search);
     
     // Load sidebar state (doesn't depend on audio)
-    if (params.get(CONFIG.URL_PARAM_SIDEBAR) === "1") {
+    if (params.get(URL_PARAMS.SIDEBAR) === "1") {
       document.body.classList.add("sidebar-visible");
       console.log("Sidebar state loaded: visible");
     } else {
@@ -46,7 +46,7 @@ export class UrlStateHandler {
     }
     
     // Load sequencer state
-    const compactState = params.get(CONFIG.URL_PARAM_SEQUENCER);
+    const compactState = params.get(URL_PARAMS.SEQUENCER);
     if (!compactState) {
       console.log("No sequencer state found in URL");
       return;

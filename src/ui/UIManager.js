@@ -1,4 +1,4 @@
-import { CONFIG } from '../config/config.js';
+import { INSTRUMENTS, SEQUENCER, EFFECTS } from '../constants/index.js';
 
 /**
  * Manages UI creation and updates
@@ -28,7 +28,7 @@ export class UIManager {
   createInstrumentTracks() {
     const instrumentTracksContainer = document.querySelector(".instrument-tracks");
     
-    CONFIG.INSTRUMENTS.forEach((instrument) => {
+    INSTRUMENTS.forEach((instrument) => {
       const trackRow = this.createTrackRow(instrument);
       instrumentTracksContainer.appendChild(trackRow);
     });
@@ -70,13 +70,13 @@ export class UIManager {
     const notesContainer = document.createElement("div");
     notesContainer.classList.add("notes-container");
 
-    for (let i = 0; i < CONFIG.STEPS; i++) {
+    for (let i = 0; i < SEQUENCER.STEPS; i++) {
       const button = document.createElement("button");
       button.classList.add("note-button");
       button.dataset.step = i;
       
       // Add visual grouping for beats
-      if (i % CONFIG.BEATS_PER_MEASURE === 0) {
+      if (i % SEQUENCER.BEATS_PER_MEASURE === 0) {
         button.classList.add("beat-start");
       }
 
@@ -131,8 +131,8 @@ export class UIManager {
     
     const slider = document.createElement("input");
     slider.type = "range";
-    slider.min = CONFIG.SLIDER_MIN;
-    slider.max = CONFIG.SLIDER_MAX;
+    slider.min = EFFECTS.SLIDER_MIN;
+    slider.max = EFFECTS.SLIDER_MAX;
     slider.value = 0;
     slider.classList.add("effect-slider", `${effectType}-slider`);
     slider.dataset.effect = effectType;
@@ -231,7 +231,7 @@ export class UIManager {
   getSliderValues() {
     const values = {};
     
-    CONFIG.INSTRUMENTS.forEach((instrument) => {
+    INSTRUMENTS.forEach((instrument) => {
       const reverbSlider = document.querySelector(
         `.instrument-track-row[data-instrument="${instrument.id}"] .reverb-slider`
       );

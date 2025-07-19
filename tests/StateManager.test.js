@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
-import { StateManager } from '../src/components/StateManager.js';
-import { CONFIG } from '../src/config/config.js';
+import { StateManager } from '../src/state/index.js';
+import { INSTRUMENTS, SEQUENCER } from '../src/constants/index.js';
 
 describe('StateManager', () => {
   let stateManager;
@@ -116,8 +116,8 @@ describe('StateManager', () => {
   describe('State Management', () => {
     test('should initialize with empty state for all instruments', () => {
       const state = stateManager.getState();
-      CONFIG.INSTRUMENTS.forEach(instrument => {
-        expect(state[instrument.id]).toEqual(Array(CONFIG.STEPS).fill(false));
+      INSTRUMENTS.forEach(instrument => {
+        expect(state[instrument.id]).toEqual(Array(SEQUENCER.STEPS).fill(false));
       });
     });
 
@@ -152,8 +152,8 @@ describe('StateManager', () => {
       
       // Check all is cleared
       const state = stateManager.getState();
-      CONFIG.INSTRUMENTS.forEach(instrument => {
-        expect(state[instrument.id]).toEqual(Array(CONFIG.STEPS).fill(false));
+      INSTRUMENTS.forEach(instrument => {
+        expect(state[instrument.id]).toEqual(Array(SEQUENCER.STEPS).fill(false));
       });
     });
   });

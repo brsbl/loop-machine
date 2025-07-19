@@ -16,15 +16,27 @@ A web-based drum sequencer and loop machine built with vanilla JavaScript and th
 ```
 loop-machine/
 ├── src/                    # Source code
-│   ├── components/         # Main application components
-│   │   ├── AudioManager.js     # Web Audio API management
-│   │   ├── Sequencer.js        # Playback timing and control
-│   │   ├── StateManager.js     # Application state management
-│   │   ├── UIManager.js        # User interface management
-│   │   └── UrlStateHandler.js  # URL state persistence
-│   ├── config/            # Configuration
-│   │   └── config.js          # App configuration and constants
-│   └── script.js          # Main application entry point
+│   ├── audio/             # Audio management
+│   │   ├── AudioManager.js
+│   │   └── index.js
+│   ├── core/              # Core sequencer logic
+│   │   ├── Sequencer.js
+│   │   └── index.js
+│   ├── state/             # State management
+│   │   ├── StateManager.js
+│   │   ├── UrlStateHandler.js
+│   │   └── index.js
+│   ├── ui/                # User interface
+│   │   ├── UIManager.js
+│   │   └── index.js
+│   ├── constants/         # Application constants
+│   │   ├── effects.js
+│   │   ├── instruments.js
+│   │   ├── sequencer.js
+│   │   ├── url.js
+│   │   └── index.js
+│   ├── utils/             # Utility functions (future)
+│   └── script.js          # Main application entry
 ├── tests/                 # Test files
 │   ├── AudioManager.test.js
 │   ├── StateManager.test.js
@@ -34,8 +46,9 @@ loop-machine/
 │   └── style.css
 ├── assets/                # Media assets
 │   └── samples/           # Audio samples
-│       ├── 808 Samples/
-│       └── BPB Cassette 909/
+│       ├── 808/           # 808 drum samples
+│       ├── 909/           # 909 drum samples
+│       └── default/       # Default samples
 └── docs/                  # Documentation
     ├── REFACTORING_SUMMARY.md
     └── TEST_SETUP.md
@@ -69,20 +82,18 @@ npm run lint            # Run ESLint
 npm run lint:fix        # Fix ESLint issues
 npm run format          # Format code with Prettier
 npm run format:check    # Check code formatting
+npm run check           # Run all checks (format, lint, test)
 ```
 
 ### Development Server
 
-To run the application locally, use any static file server. For example:
-
 ```bash
-cd public
-python3 -m http.server 8000
+npm start               # Start development server on port 3000
 # or
-npx serve public
+npm run dev             # Same as npm start
 ```
 
-Then open `http://localhost:8000` in your browser.
+Then open `http://localhost:3000` in your browser.
 
 ## Usage
 
