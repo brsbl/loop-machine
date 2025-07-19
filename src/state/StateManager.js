@@ -1,4 +1,4 @@
-import { CONFIG } from '../config/config.js';
+import { INSTRUMENTS, SEQUENCER } from '../constants/index.js';
 
 /**
  * Manages sequencer state and URL persistence
@@ -13,8 +13,8 @@ export class StateManager {
    * Initialize empty state for all instruments
    */
   initializeState() {
-    CONFIG.INSTRUMENTS.forEach((instrument) => {
-      this.sequenceState[instrument.id] = Array(CONFIG.STEPS).fill(false);
+    INSTRUMENTS.forEach((instrument) => {
+      this.sequenceState[instrument.id] = Array(SEQUENCER.STEPS).fill(false);
     });
   }
 
@@ -68,10 +68,10 @@ export class StateManager {
    * @returns {boolean[]}
    */
   hexToState(hexString) {
-    if (!hexString || hexString.length !== 4) return Array(CONFIG.STEPS).fill(false);
+    if (!hexString || hexString.length !== 4) return Array(SEQUENCER.STEPS).fill(false);
     const binaryString = parseInt(hexString, 16)
       .toString(2)
-      .padStart(CONFIG.STEPS, "0");
+      .padStart(SEQUENCER.STEPS, "0");
     return binaryString.split("").map((char) => char === "1");
   }
 
@@ -107,7 +107,7 @@ export class StateManager {
     let notesHex = "";
     let slidersChars = "";
 
-    CONFIG.INSTRUMENTS.forEach((instrument) => {
+    INSTRUMENTS.forEach((instrument) => {
       // Notes
       notesHex += this.stateToHex(this.sequenceState[instrument.id]);
       
@@ -126,7 +126,7 @@ export class StateManager {
    * @returns {Object|null} Parsed state or null if invalid
    */
   parseCompactState(compactState) {
-    const expectedLength = CONFIG.INSTRUMENTS.length * 4 + 1 + CONFIG.INSTRUMENTS.length * 2;
+    const expectedLength = INSTRUMENTS.length * 4 + 1 + INSTRUMENTS.length * 2;
     
     if (!compactState || compactState.length !== expectedLength || !compactState.includes("_")) {
       return null;
@@ -142,7 +142,7 @@ export class StateManager {
       let noteOffset = 0;
       let sliderOffset = 0;
 
-      CONFIG.INSTRUMENTS.forEach((instrument) => {
+      INSTRUMENTS.forEach((instrument) => {
         // Parse notes
         const noteHex = notesPart.substring(noteOffset, noteOffset + 4);
         result.notes[instrument.id] = this.hexToState(noteHex);
@@ -194,7 +194,7 @@ export class StateManager {
   getStateAsJson(sliderValues) {
     const currentState = {};
     
-    CONFIG.INSTRUMENTS.forEach((instrument) => {
+    INSTRUMENTS.forEach((instrument) => {
       const notesState = this.sequenceState[instrument.id];
       const values = sliderValues[instrument.id] || { reverb: 0, delay: 0 };
       
@@ -232,7 +232,7 @@ export class StateManager {
     };
 
     try {
-      CONFIG.INSTRUMENTS.forEach((instrument) => {
+      INSTRUMENTS.forEach((instrument) => {
         const instState = jsonState[instrument.id];
         if (!instState) {
           throw new Error(`No data found for instrument ${instrument.id}`);

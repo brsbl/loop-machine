@@ -2,8 +2,8 @@
  * @jest-environment jsdom
  */
 
-import { AudioManager } from '../src/components/AudioManager.js';
-import { CONFIG } from '../src/config/config.js';
+import { AudioManager } from '../src/audio/index.js';
+import { INSTRUMENTS } from '../src/constants/index.js';
 
 // Mock AudioContext
 global.AudioContext = jest.fn().mockImplementation(() => ({
@@ -75,8 +75,8 @@ describe('AudioManager', () => {
       
       await audioManager.loadSounds();
       
-      expect(fetch).toHaveBeenCalledTimes(CONFIG.INSTRUMENTS.length);
-      CONFIG.INSTRUMENTS.forEach(instrument => {
+      expect(fetch).toHaveBeenCalledTimes(INSTRUMENTS.length);
+      INSTRUMENTS.forEach(instrument => {
         expect(fetch).toHaveBeenCalledWith(instrument.path);
         expect(audioManager.audioBuffers[instrument.id]).toBe(mockAudioBuffer);
       });
@@ -88,7 +88,7 @@ describe('AudioManager', () => {
       
       await audioManager.loadSounds();
       
-      CONFIG.INSTRUMENTS.forEach(instrument => {
+      INSTRUMENTS.forEach(instrument => {
         expect(audioManager.effectNodes[instrument.id]).toBeDefined();
         expect(audioManager.effectNodes[instrument.id].mainGain).toBeDefined();
         expect(audioManager.effectNodes[instrument.id].reverb).toBeDefined();
