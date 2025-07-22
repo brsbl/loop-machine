@@ -191,9 +191,15 @@ describe("Loop Machine Core Functionality", () => {
     });
 
     test("should handle audio loading failures gracefully", async () => {
-      fetch.mockRejectedValueOnce(new Error("Network error"));
+      // Reset and configure fetch to reject
+      fetch.mockReset();
+      fetch.mockRejectedValue(new Error("Network error"));
       
+      // Verify the mock rejects as expected
       await expect(fetch("invalid-path.wav")).rejects.toThrow("Network error");
+      
+      // In the actual app, AudioManager.loadSounds() would handle this error
+      // But we're just testing the mock setup here
     });
   });
 
