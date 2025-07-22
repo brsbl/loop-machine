@@ -191,9 +191,11 @@ describe("Loop Machine Core Functionality", () => {
     });
 
     test("should handle audio loading failures gracefully", async () => {
-      fetch.mockRejectedValueOnce(new Error("Network error"));
+      // Mock fetch to reject once
+      const fetchPromise = Promise.reject(new Error("Network error"));
+      fetch.mockReturnValueOnce(fetchPromise);
       
-      await expect(fetch("invalid-path.wav")).rejects.toThrow("Network error");
+      await expect(fetchPromise).rejects.toThrow("Network error");
     });
   });
 

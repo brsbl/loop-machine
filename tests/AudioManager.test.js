@@ -141,7 +141,7 @@ describe('AudioManager', () => {
         audioManager.audioContext.currentTime
       );
       expect(nodes.delayFeedback.gain.setValueAtTime).toHaveBeenCalledWith(
-        0.49, // 7/10 * MAX_FEEDBACK(0.7)
+        expect.closeTo(0.49, 5), // 7/10 * MAX_FEEDBACK(0.7)
         audioManager.audioContext.currentTime
       );
       expect(nodes.delayWet.gain.setValueAtTime).toHaveBeenCalledWith(
@@ -167,7 +167,13 @@ describe('AudioManager', () => {
     });
 
     test('should play sound at specified time', () => {
-      const mockSource = audioManager.audioContext.createBufferSource();
+      // Get the mock source that will be created
+      const mockSource = {
+        connect: jest.fn(),
+        start: jest.fn(),
+        buffer: null,
+      };
+      audioManager.audioContext.createBufferSource.mockReturnValueOnce(mockSource);
       
       audioManager.playSound('kick', 1.5);
       
