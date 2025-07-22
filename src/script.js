@@ -14,6 +14,9 @@ class LoopMachine {
     this.sequencer = new Sequencer(this.stateManager, this.audioManager, this.uiManager);
     this.urlStateHandler = new UrlStateHandler(this.stateManager, this.uiManager);
     
+    // Store event handler for cleanup
+    this.playButtonHandler = null;
+    
     this.init();
   }
 
@@ -59,9 +62,10 @@ class LoopMachine {
     
     // Handle play/stop button
     const playButton = document.getElementById("play-stop-button");
-    playButton.addEventListener("click", () => {
+    this.playButtonHandler = () => {
       this.sequencer.toggle();
-    });
+    };
+    playButton.addEventListener("click", this.playButtonHandler);
     
     // Handle reset functionality in UI
     const originalReset = this.uiManager.reset.bind(this.uiManager);
@@ -76,6 +80,34 @@ class LoopMachine {
    */
   loadUrlState() {
     this.urlStateHandler.loadFromUrl(() => this.loadUrlState());
+  }
+  
+  /**
+   * Clean up all resources and event listeners
+   */
+  destroy() {
+    // Stop sequencer if playing
+    this.sequencer.stop();
+    
+    // Remove play button event listener
+    const playButton = document.getElementById("play-stop-button");
+    if (playButton && this.playButtonHandler) {
+      playButton.removeEventListener("click", this.playButtonHandler);
+    }
+    
+    // Clean up UI Manager
+    this.uiManager.destroy();
+    
+    // Clean up other managers if they have destroy methods
+    if (this.audioManager.destroy) {
+      this.audioManager.destroy();
+    }
+    if (this.sequencer.destroy) {
+      this.sequencer.destroy();
+    }
+    if (this.urlStateHandler.destroy) {
+      this.urlStateHandler.destroy();
+    }
   }
 }
 

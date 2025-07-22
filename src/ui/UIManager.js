@@ -11,6 +11,10 @@ export class UIManager {
     this.onSliderChange = null;
     this.onUrlStateChange = null;
     this.lastVisualStep = -1;
+    
+    // Store references to event listeners for cleanup
+    this.eventListeners = new Map();
+    this.boundHandlers = new Map();
   }
 
   /**
@@ -19,6 +23,7 @@ export class UIManager {
   init() {
     this.createInstrumentTracks();
     this.setupSidebar();
+    this.setupEventDelegation();
     this.updateJsonEditor();
   }
 
@@ -51,7 +56,7 @@ export class UIManager {
     trackRow.appendChild(label);
 
     // Note Buttons Container
-    const notesContainer = this.createNotesContainer(instrument);
+    const notesContainer = this.createNotesContainer();
     trackRow.appendChild(notesContainer);
 
     // Effects Sliders Container
@@ -63,10 +68,9 @@ export class UIManager {
 
   /**
    * Create notes container with buttons
-   * @param {Object} instrument 
    * @returns {HTMLElement}
    */
-  createNotesContainer(instrument) {
+  createNotesContainer() {
     const notesContainer = document.createElement("div");
     notesContainer.classList.add("notes-container");
 
@@ -80,18 +84,7 @@ export class UIManager {
         button.classList.add("beat-start");
       }
 
-      button.addEventListener("click", () => {
-        const active = this.stateManager.toggleStep(instrument.id, i);
-        button.classList.toggle("active", active);
-        
-        if (this.onStepToggle) {
-          this.onStepToggle(instrument.id, i, active);
-        }
-        if (this.onUrlStateChange) {
-          this.onUrlStateChange();
-        }
-        this.updateJsonEditor();
-      });
+      // Event delegation handles clicks - no individual listeners needed
       
       notesContainer.appendChild(button);
     }
@@ -137,7 +130,7 @@ export class UIManager {
     slider.classList.add("effect-slider", `${effectType}-slider`);
     slider.dataset.effect = effectType;
     
-    slider.addEventListener("input", (e) => {
+    const handler = (e) => {
       this.audioManager.updateEffect(instrument.id, effectType, e.target.value);
       
       if (this.onSliderChange) {
@@ -147,10 +140,44 @@ export class UIManager {
         this.onUrlStateChange();
       }
       this.updateJsonEditor();
-    });
+    };
+    
+    slider.addEventListener("input", handler);
+    this.addEventListenerRecord(slider, "input", handler);
     
     sliderContainer.appendChild(slider);
     return sliderContainer;
+  }
+
+  /**
+   * Setup event delegation for dynamic elements
+   */
+  setupEventDelegation() {
+    const instrumentTracksContainer = document.querySelector(".instrument-tracks");
+    
+    // Delegate note button clicks
+    const noteButtonHandler = (e) => {
+      const button = e.target.closest(".note-button");
+      if (!button) return;
+      
+      const trackRow = button.closest(".instrument-track-row");
+      const instrumentId = trackRow.dataset.instrument;
+      const stepIndex = parseInt(button.dataset.step, 10);
+      
+      const active = this.stateManager.toggleStep(instrumentId, stepIndex);
+      button.classList.toggle("active", active);
+      
+      if (this.onStepToggle) {
+        this.onStepToggle(instrumentId, stepIndex, active);
+      }
+      if (this.onUrlStateChange) {
+        this.onUrlStateChange();
+      }
+      this.updateJsonEditor();
+    };
+    
+    instrumentTracksContainer.addEventListener("click", noteButtonHandler);
+    this.addEventListenerRecord(instrumentTracksContainer, "click", noteButtonHandler);
   }
 
   /**
@@ -161,21 +188,27 @@ export class UIManager {
     const applyButton = document.getElementById("apply-json-button");
     const resetButton = document.getElementById("reset-button");
 
-    toggleButton.addEventListener("click", () => {
+    const toggleHandler = () => {
       document.body.classList.toggle("sidebar-visible");
       if (this.onUrlStateChange) {
         this.onUrlStateChange();
       }
-    });
+    };
+    toggleButton.addEventListener("click", toggleHandler);
+    this.addEventListenerRecord(toggleButton, "click", toggleHandler);
 
-    applyButton.addEventListener("click", () => {
+    const applyHandler = () => {
       this.applyJsonState();
-    });
+    };
+    applyButton.addEventListener("click", applyHandler);
+    this.addEventListenerRecord(applyButton, "click", applyHandler);
 
     if (resetButton) {
-      resetButton.addEventListener("click", () => {
+      const resetHandler = () => {
         this.reset();
-      });
+      };
+      resetButton.addEventListener("click", resetHandler);
+      this.addEventListenerRecord(resetButton, "click", resetHandler);
     }
   }
 
@@ -433,6 +466,52 @@ export class UIManager {
     const playButton = document.getElementById("play-stop-button");
     if (playButton) {
       playButton.classList.toggle("playing", isPlaying);
+    }
+  }
+
+  /**
+   * Add event listener and store reference for cleanup
+   * @param {HTMLElement} element 
+   * @param {string} event 
+   * @param {Function} handler 
+   */
+  addEventListenerRecord(element, event, handler) {
+    if (!element) return;
+    
+    const key = `${element.tagName}_${element.className}_${event}`;
+    if (!this.eventListeners.has(key)) {
+      this.eventListeners.set(key, []);
+    }
+    this.eventListeners.get(key).push({ element, event, handler });
+  }
+
+  /**
+   * Clean up all event listeners and references
+   */
+  destroy() {
+    // Remove all tracked event listeners
+    this.eventListeners.forEach((listeners) => {
+      listeners.forEach(({ element, event, handler }) => {
+        element.removeEventListener(event, handler);
+      });
+    });
+    this.eventListeners.clear();
+    
+    // Clear bound handlers
+    this.boundHandlers.clear();
+    
+    // Clear callbacks
+    this.onStepToggle = null;
+    this.onSliderChange = null;
+    this.onUrlStateChange = null;
+    
+    // Clear visual state
+    this.clearPlayhead();
+    
+    // Remove all dynamically created elements
+    const instrumentTracksContainer = document.querySelector(".instrument-tracks");
+    if (instrumentTracksContainer) {
+      instrumentTracksContainer.innerHTML = '';
     }
   }
 }
