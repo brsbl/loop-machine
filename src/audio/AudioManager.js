@@ -1,4 +1,6 @@
 import { INSTRUMENTS, EFFECTS } from '../constants/index.js';
+import { AudioLoader } from './AudioLoader.js';
+import { FallbackSoundGenerator } from './FallbackSoundGenerator.js';
 
 /**
  * Manages audio context, buffer loading, and effect nodes
@@ -8,6 +10,11 @@ export class AudioManager {
     this.audioContext = null;
     this.audioBuffers = {};
     this.effectNodes = {};
+    this.loader = null;
+    this.fallbackGenerator = null;
+    this.loadingErrors = [];
+    this.isPartiallyLoaded = false;
+    this.onLoadProgress = null;
   }
 
   /**
@@ -17,6 +24,8 @@ export class AudioManager {
   init() {
     if (!this.audioContext) {
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      this.loader = new AudioLoader(this.audioContext);
+      this.fallbackGenerator = new FallbackSoundGenerator(this.audioContext);
       console.log("AudioContext created.");
       return true;
     }
@@ -37,33 +46,108 @@ export class AudioManager {
    */
   isReady() {
     return this.audioContext && 
-           Object.keys(this.audioBuffers).length === INSTRUMENTS.length;
+           (Object.keys(this.audioBuffers).length === INSTRUMENTS.length || this.isPartiallyLoaded);
   }
 
   /**
-   * Load all audio samples
+   * Load all audio samples with error recovery
+   * @param {Function} onProgress - Progress callback
    * @returns {Promise<void>}
    */
-  async loadSounds() {
+  async loadSounds(onProgress = null) {
     console.log("Loading sounds...");
+    this.onLoadProgress = onProgress;
     
-    const loadPromises = INSTRUMENTS.map(async (instrument) => {
-      try {
-        const response = await fetch(instrument.path);
-        const arrayBuffer = await response.arrayBuffer();
-        this.audioBuffers[instrument.id] = await this.audioContext.decodeAudioData(
-          arrayBuffer
-        );
-        console.log(`Loaded: ${instrument.name}`);
+    // Try to load samples with retry logic
+    const { buffers, errors } = await this.loader.loadAllSamples(onProgress);
+    
+    // Store successfully loaded buffers
+    Object.assign(this.audioBuffers, buffers);
+    this.loadingErrors = errors;
+    
+    // Setup effect nodes for loaded instruments
+    Object.keys(buffers).forEach(instrumentId => {
+      this.setupEffectNodes(instrumentId);
+    });
+    
+    // If some samples failed, try to generate fallback sounds
+    if (errors.length > 0) {
+      console.warn(`Failed to load ${errors.length} samples, generating fallback sounds...`);
+      await this.generateFallbacksForFailed();
+      this.isPartiallyLoaded = true;
+    }
+    
+    // If no samples loaded at all, throw error
+    if (Object.keys(this.audioBuffers).length === 0) {
+      throw new Error("Failed to load any audio samples");
+    }
+    
+    console.log(`Loaded ${Object.keys(this.audioBuffers).length}/${INSTRUMENTS.length} sounds.`);
+  }
+
+  /**
+   * Generate fallback sounds for failed samples
+   */
+  async generateFallbacksForFailed() {
+    const fallbacks = await this.fallbackGenerator.generateFallbackSounds();
+    
+    this.loadingErrors.forEach(({ instrument }) => {
+      const fallbackBuffer = fallbacks[instrument.id];
+      if (fallbackBuffer) {
+        this.audioBuffers[instrument.id] = fallbackBuffer;
         this.setupEffectNodes(instrument.id);
-      } catch (error) {
-        console.error(`Error loading sound ${instrument.name}:`, error);
-        throw error;
+        console.log(`Using fallback sound for ${instrument.name}`);
       }
     });
+  }
 
-    await Promise.all(loadPromises);
-    console.log("All sounds loaded.");
+  /**
+   * Retry loading failed samples
+   * @param {Function} onProgress - Progress callback
+   * @returns {Promise<{success: boolean, errors: Array}>}
+   */
+  async retryFailedSamples(onProgress = null) {
+    if (!this.loader || this.loadingErrors.length === 0) {
+      return { success: true, errors: [] };
+    }
+    
+    const { buffers, errors } = await this.loader.retryFailedSamples(onProgress);
+    
+    // Update loaded buffers
+    Object.assign(this.audioBuffers, buffers);
+    
+    // Setup effect nodes for newly loaded instruments
+    Object.keys(buffers).forEach(instrumentId => {
+      if (!this.effectNodes[instrumentId]) {
+        this.setupEffectNodes(instrumentId);
+      }
+    });
+    
+    this.loadingErrors = errors;
+    
+    // Update partial load status
+    if (errors.length === 0) {
+      this.isPartiallyLoaded = false;
+    }
+    
+    return {
+      success: errors.length === 0,
+      errors
+    };
+  }
+
+  /**
+   * Get loading status
+   * @returns {Object}
+   */
+  getLoadingStatus() {
+    return {
+      loaded: Object.keys(this.audioBuffers).length,
+      total: INSTRUMENTS.length,
+      errors: this.loadingErrors,
+      isPartiallyLoaded: this.isPartiallyLoaded,
+      failedInstruments: this.loadingErrors.map(e => e.instrument.name)
+    };
   }
 
   /**
@@ -119,7 +203,9 @@ export class AudioManager {
    * @param {number} value - 0-10
    */
   updateEffect(instrumentId, effectType, value) {
-    if (!this.effectNodes[instrumentId]) return;
+    if (!this.effectNodes[instrumentId]) {
+      return;
+    }
     
     const nodes = this.effectNodes[instrumentId];
     const sliderValue = parseInt(value, 10);
