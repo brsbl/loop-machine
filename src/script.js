@@ -33,6 +33,11 @@ class LoopMachine {
     // Set up event handlers
     this.setupEventHandlers();
     
+    // Set up cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      this.urlStateHandler.cancelPendingOperations();
+    });
+    
     // Load audio samples
     try {
       await this.audioManager.loadSounds();
@@ -74,8 +79,8 @@ class LoopMachine {
   /**
    * Load state from URL with retry logic
    */
-  loadUrlState() {
-    this.urlStateHandler.loadFromUrl(() => this.loadUrlState());
+  loadUrlState(retryCount = 0) {
+    this.urlStateHandler.loadFromUrl((count) => this.loadUrlState(count), 50, retryCount);
   }
 }
 
