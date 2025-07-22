@@ -27,14 +27,15 @@ global.fetch = jest.fn();
 
 describe("Loop Machine Core Functionality", () => {
   beforeEach(() => {
+    // Clear all mocks
+    jest.clearAllMocks();
+    
     // Minimal DOM setup for functionality tests
     document.body.innerHTML = `
       <div class="instrument-tracks"></div>
       <button id="play-stop-button"></button>
     `;
 
-    jest.clearAllMocks();
-    
     // Mock fetch responses
     fetch.mockResolvedValue({
       arrayBuffer: () => Promise.resolve(new ArrayBuffer(8)),
@@ -191,6 +192,7 @@ describe("Loop Machine Core Functionality", () => {
     });
 
     test("should handle audio loading failures gracefully", async () => {
+      fetch.mockReset();
       fetch.mockRejectedValueOnce(new Error("Network error"));
       
       await expect(fetch("invalid-path.wav")).rejects.toThrow("Network error");

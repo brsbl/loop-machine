@@ -175,12 +175,12 @@ describe('StateManager', () => {
       const compact = stateManager.generateCompactState(sliderValues);
       
       // Should be: hihat(a000) + snare(0800) + kick(8000) + "_" + sliders
-      expect(compact).toMatch(/^[0-9a-f]{12}_[0-9a]{6}$/);
-      expect(compact).toBe('a00008008000_537000a');
+      expect(compact).toMatch(/^[0-9a-f]{12}_[0-9a-z]{6}$/);
+      expect(compact).toBe('a00008008000_53700a');
     });
 
     test('should parse compact state string correctly', () => {
-      const compactState = 'a00008008000_537000a';
+      const compactState = 'a00008008000_53700a';
       const parsed = stateManager.parseCompactState(compactState);
       
       expect(parsed).not.toBeNull();

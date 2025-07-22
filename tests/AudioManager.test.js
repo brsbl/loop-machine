@@ -16,11 +16,16 @@ global.AudioContext = jest.fn().mockImplementation(() => ({
     delayTime: { value: 0, setValueAtTime: jest.fn() },
   })),
   decodeAudioData: jest.fn(),
-  createBufferSource: jest.fn(() => ({
-    connect: jest.fn(),
-    start: jest.fn(),
-    buffer: null,
-  })),
+  createBufferSource: jest.fn(() => {
+    const source = {
+      connect: jest.fn(),
+      start: jest.fn(),
+      _buffer: null,
+      get buffer() { return this._buffer; },
+      set buffer(value) { this._buffer = value; }
+    };
+    return source;
+  }),
   currentTime: 0,
   destination: {},
   state: 'running',
@@ -141,7 +146,7 @@ describe('AudioManager', () => {
         audioManager.audioContext.currentTime
       );
       expect(nodes.delayFeedback.gain.setValueAtTime).toHaveBeenCalledWith(
-        0.49, // 7/10 * MAX_FEEDBACK(0.7)
+        expect.closeTo(0.49, 5), // 7/10 * MAX_FEEDBACK(0.7)
         audioManager.audioContext.currentTime
       );
       expect(nodes.delayWet.gain.setValueAtTime).toHaveBeenCalledWith(
@@ -167,11 +172,15 @@ describe('AudioManager', () => {
     });
 
     test('should play sound at specified time', () => {
-      const mockSource = audioManager.audioContext.createBufferSource();
-      
       audioManager.playSound('kick', 1.5);
       
       expect(audioManager.audioContext.createBufferSource).toHaveBeenCalled();
+      
+      // Get the last created source
+      const mockSource = audioManager.audioContext.createBufferSource.mock.results[
+        audioManager.audioContext.createBufferSource.mock.results.length - 1
+      ].value;
+      
       expect(mockSource.buffer).toBe(audioManager.audioBuffers.kick);
       expect(mockSource.connect).toHaveBeenCalledWith(
         audioManager.effectNodes.kick.mainGain
