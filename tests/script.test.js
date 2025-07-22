@@ -49,7 +49,7 @@ describe("Loop Machine Core Functionality", () => {
     };
 
     const hexToState = (hexString) => {
-      if (!hexString || hexString.length !== 4) return Array(16).fill(false);
+      if (!hexString || hexString.length !== 4) {return Array(16).fill(false);}
       const binaryString = parseInt(hexString, 16)
         .toString(2)
         .padStart(16, "0");
@@ -122,26 +122,23 @@ describe("Loop Machine Core Functionality", () => {
   describe("Slider Value Encoding", () => {
     const valueToChar = (val) => {
       const num = parseInt(val, 10);
-      if (num >= 0 && num <= 9) return String(num);
-      if (num === 10) return "a";
+      if (num >= 0 && num <= 9) {return String(num);}
+      if (num === 10) {return "a";}
       return "0";
     };
 
     const charToValue = (char) => {
-      if (char >= "0" && char <= "9") return parseInt(char, 10);
-      if (char === "a") return 10;
+      if (char >= "0" && char <= "9") {return parseInt(char, 10);}
+      if (char === "a") {return 10;}
       return 0;
     };
 
     test("valueToChar should encode slider values correctly", () => {
       // Test valid range
-      for (let i = 0; i <= 10; i++) {
-        if (i < 10) {
-          expect(valueToChar(i)).toBe(String(i));
-        } else {
-          expect(valueToChar(i)).toBe("a");
-        }
+      for (let i = 0; i <= 9; i++) {
+        expect(valueToChar(i)).toBe(String(i));
       }
+      expect(valueToChar(10)).toBe("a");
       
       // Test out of range values
       expect(valueToChar(-1)).toBe("0");

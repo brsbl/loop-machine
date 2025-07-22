@@ -68,7 +68,7 @@ export class StateManager {
    * @returns {boolean[]}
    */
   hexToState(hexString) {
-    if (!hexString || hexString.length !== 4) return Array(SEQUENCER.STEPS).fill(false);
+    if (!hexString || hexString.length !== 4) {return Array(SEQUENCER.STEPS).fill(false);}
     const binaryString = parseInt(hexString, 16)
       .toString(2)
       .padStart(SEQUENCER.STEPS, "0");
@@ -82,8 +82,8 @@ export class StateManager {
    */
   valueToChar(val) {
     const num = parseInt(val, 10);
-    if (num >= 0 && num <= 9) return String(num);
-    if (num === 10) return "a";
+    if (num >= 0 && num <= 9) {return String(num);}
+    if (num === 10) {return "a";}
     return "0";
   }
 
@@ -93,8 +93,8 @@ export class StateManager {
    * @returns {number}
    */
   charToValue(char) {
-    if (char >= "0" && char <= "9") return parseInt(char, 10);
-    if (char === "a") return 10;
+    if (char >= "0" && char <= "9") {return parseInt(char, 10);}
+    if (char === "a") {return 10;}
     return 0;
   }
 

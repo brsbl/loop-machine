@@ -13,7 +13,7 @@ class LoopMachine {
     this.uiManager = new UIManager(this.stateManager, this.audioManager);
     this.sequencer = new Sequencer(this.stateManager, this.audioManager, this.uiManager);
     this.urlStateHandler = new UrlStateHandler(this.stateManager, this.uiManager);
-    
+
     this.init();
   }
 
@@ -21,34 +21,34 @@ class LoopMachine {
    * Initialize the application
    */
   async init() {
-    console.log("Initializing Loop Machine...");
-    
+    console.log('Initializing Loop Machine...');
+
     // Initialize audio context
     const audioInitialized = this.audioManager.init();
     if (!audioInitialized) {
-      console.error("Failed to initialize AudioContext");
-      alert("Failed to initialize audio. Your browser may not support Web Audio API.");
+      console.error('Failed to initialize AudioContext');
+      alert('Failed to initialize audio. Your browser may not support Web Audio API.');
       return;
     }
-    
+
     // Initialize UI
     this.uiManager.init();
     this.uiManager.setPlayButtonEnabled(false);
-    
+
     // Set up event handlers
     this.setupEventHandlers();
-    
+
     // Load audio samples
     try {
       await this.audioManager.loadSounds();
       this.uiManager.setPlayButtonEnabled(true);
-      console.log("Audio loading complete");
+      console.log('Audio loading complete');
     } catch (error) {
-      console.error("Failed to load audio:", error);
-      alert("Failed to load audio samples. Please refresh the page.");
+      console.error('Failed to load audio:', error);
+      alert('Failed to load audio samples. Please refresh the page.');
       return;
     }
-    
+
     // Load state from URL
     this.loadUrlState();
   }
@@ -61,13 +61,13 @@ class LoopMachine {
     this.uiManager.onUrlStateChange = () => {
       this.urlStateHandler.updateUrl();
     };
-    
+
     // Handle play/stop button
-    const playButton = document.getElementById("play-stop-button");
-    playButton.addEventListener("click", () => {
+    const playButton = document.getElementById('play-stop-button');
+    playButton.addEventListener('click', () => {
       this.sequencer.toggle();
     });
-    
+
     // Handle reset functionality in UI
     const originalReset = this.uiManager.reset.bind(this.uiManager);
     this.uiManager.reset = () => {
@@ -85,7 +85,7 @@ class LoopMachine {
 }
 
 // Initialize the application when DOM is ready
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("DOM Content Loaded - Starting Loop Machine");
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('DOM Content Loaded - Starting Loop Machine');
   window.loopMachine = new LoopMachine();
 });

@@ -184,7 +184,7 @@ export class UIManager {
    * @param {Object} parsedState 
    */
   updateFromState(parsedState) {
-    if (!parsedState) return;
+    if (!parsedState) {return;}
 
     // Update note buttons
     if (parsedState.notes) {
@@ -278,8 +278,8 @@ export class UIManager {
     
     const punc = (char) => {
       let cls = "json-punctuation";
-      if (char === "[" || char === "]") cls += " json-punctuation-bracket";
-      else if (char === "{" || char === "}") cls += " json-punctuation-brace";
+      if (char === "[" || char === "]") {cls += " json-punctuation-bracket";}
+      else if (char === "{" || char === "}") {cls += " json-punctuation-brace";}
       return `<span class="${cls}">${char}</span>`;
     };
 
@@ -291,19 +291,19 @@ export class UIManager {
     } else if (typeof value === "string") {
       return `<span class="json-string">"${value}"</span>`;
     } else if (Array.isArray(value)) {
-      if (value.length === 0) return `${punc("[")}${punc("]")}`;
+      if (value.length === 0) {return `${punc("[")}${punc("]")}`;}
       const items = value.map((item) => this.formatJsonForDisplay(item, 0, null));
       return `${punc("[")}${items.join(punc(",") + " ")}${punc("]")}`;
     } else if (typeof value === "object" && value !== null) {
       const keys = Object.keys(value);
-      if (keys.length === 0) return `${punc("{")}${punc("}")}`;
+      if (keys.length === 0) {return `${punc("{")}${punc("}")}`;}
 
       const items = keys.map((key) => {
         let keyClass = "json-key";
         if (parentKey === null) {
-          if (key === "hihat") keyClass += " json-key-hihat";
-          else if (key === "snare") keyClass += " json-key-snare";
-          else if (key === "kick") keyClass += " json-key-kick";
+          if (key === "hihat") {keyClass += " json-key-hihat";}
+          else if (key === "snare") {keyClass += " json-key-snare";}
+          else if (key === "kick") {keyClass += " json-key-kick";}
         }
         const formattedKey = `<span class="${keyClass}">"${key}"</span>`;
         const formattedValue = this.formatJsonForDisplay(value[key], indentLevel + 1, key);
@@ -398,7 +398,7 @@ export class UIManager {
    * @param {number} stepIndex 
    */
   clearStepHighlight(stepIndex) {
-    if (stepIndex < 0) return;
+    if (stepIndex < 0) {return;}
     document
       .querySelectorAll(`.note-button[data-step="${stepIndex}"]`)
       .forEach((btn) => btn.classList.remove("playing-step"));
