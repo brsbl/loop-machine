@@ -16,9 +16,15 @@ export class AudioManager {
    */
   init() {
     if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      console.log("AudioContext created.");
-      return true;
+      try {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        console.log("AudioContext created.");
+        return true;
+      } catch (error) {
+        console.error("Failed to create AudioContext:", error);
+        this.audioContext = null;
+        return false;
+      }
     }
     return false;
   }
@@ -32,11 +38,19 @@ export class AudioManager {
   }
 
   /**
+   * Check if audio context is initialized
+   * @returns {boolean}
+   */
+  isInitialized() {
+    return this.audioContext !== null;
+  }
+
+  /**
    * Check if audio is ready
    * @returns {boolean}
    */
   isReady() {
-    return this.audioContext && 
+    return this.audioContext !== null && 
            Object.keys(this.audioBuffers).length === INSTRUMENTS.length;
   }
 
@@ -45,6 +59,10 @@ export class AudioManager {
    * @returns {Promise<void>}
    */
   async loadSounds() {
+    if (!this.isInitialized()) {
+      throw new Error("AudioContext not initialized. Call init() first.");
+    }
+    
     console.log("Loading sounds...");
     
     const loadPromises = INSTRUMENTS.map(async (instrument) => {
@@ -71,6 +89,11 @@ export class AudioManager {
    * @param {string} instrumentId 
    */
   setupEffectNodes(instrumentId) {
+    if (!this.isInitialized()) {
+      console.error("Cannot setup effect nodes: AudioContext not initialized");
+      return;
+    }
+    
     const gainNode = this.audioContext.createGain();
     const reverbNode = this.audioContext.createGain(); // Placeholder for Reverb (Wet Gain)
     const delayNode = this.audioContext.createDelay(1.0); // Max delay 1 sec
@@ -119,7 +142,14 @@ export class AudioManager {
    * @param {number} value - 0-10
    */
   updateEffect(instrumentId, effectType, value) {
-    if (!this.effectNodes[instrumentId]) return;
+    if (!this.isInitialized()) {
+      console.warn("Cannot update effect: AudioContext not initialized");
+      return;
+    }
+    
+    if (!this.effectNodes[instrumentId]) {
+      return;
+    }
     
     const nodes = this.effectNodes[instrumentId];
     const sliderValue = parseInt(value, 10);
@@ -150,6 +180,11 @@ export class AudioManager {
    * @param {number} time - AudioContext time
    */
   playSound(instrumentId, time) {
+    if (!this.isInitialized()) {
+      console.warn("Cannot play sound: AudioContext not initialized");
+      return;
+    }
+    
     if (!this.audioBuffers[instrumentId] || !this.effectNodes[instrumentId]) {
       console.log(`Buffer or nodes missing for ${instrumentId}`);
       return;

@@ -21,7 +21,9 @@ export class Sequencer {
    * Start the sequencer
    */
   async start() {
-    if (this.isPlaying) return;
+    if (this.isPlaying) {
+      return;
+    }
     
     const audioContext = this.audioManager.getContext();
     if (!audioContext) {
@@ -55,7 +57,9 @@ export class Sequencer {
    * Stop the sequencer
    */
   stop() {
-    if (!this.isPlaying) return;
+    if (!this.isPlaying) {
+      return;
+    }
     
     console.log("Stopping sequencer");
     this.isPlaying = false;
@@ -90,6 +94,12 @@ export class Sequencer {
    */
   scheduler() {
     const audioContext = this.audioManager.getContext();
+    if (!audioContext) {
+      console.error("AudioContext lost during scheduling");
+      this.stop();
+      return;
+    }
+    
     const state = this.stateManager.getState();
     
     while (this.nextNoteTime < audioContext.currentTime + SEQUENCER.SCHEDULE_AHEAD_TIME) {
@@ -117,9 +127,17 @@ export class Sequencer {
    * Visual update loop
    */
   updateVisuals() {
-    if (!this.isPlaying) return;
+    if (!this.isPlaying) {
+      return;
+    }
     
     const audioContext = this.audioManager.getContext();
+    if (!audioContext) {
+      console.error("AudioContext lost during visual update");
+      this.stop();
+      return;
+    }
+    
     const loopDuration = SEQUENCER.STEPS * STEP_TIME;
     const timeWithinLoop = (audioContext.currentTime - this.startTime) % loopDuration;
     const visualStep = Math.floor(timeWithinLoop / STEP_TIME);
