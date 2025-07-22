@@ -24,7 +24,12 @@ class LoopMachine {
     console.log("Initializing Loop Machine...");
     
     // Initialize audio context
-    this.audioManager.init();
+    const audioInitialized = this.audioManager.init();
+    if (!audioInitialized) {
+      console.error("Failed to initialize AudioContext");
+      alert("Failed to initialize audio. Your browser may not support Web Audio API.");
+      return;
+    }
     
     // Initialize UI
     this.uiManager.init();

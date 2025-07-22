@@ -141,7 +141,7 @@ describe('AudioManager', () => {
         audioManager.audioContext.currentTime
       );
       expect(nodes.delayFeedback.gain.setValueAtTime).toHaveBeenCalledWith(
-        0.49, // 7/10 * MAX_FEEDBACK(0.7)
+        expect.closeTo(0.49, 2), // 7/10 * MAX_FEEDBACK(0.7)
         audioManager.audioContext.currentTime
       );
       expect(nodes.delayWet.gain.setValueAtTime).toHaveBeenCalledWith(
@@ -167,11 +167,12 @@ describe('AudioManager', () => {
     });
 
     test('should play sound at specified time', () => {
-      const mockSource = audioManager.audioContext.createBufferSource();
-      
       audioManager.playSound('kick', 1.5);
       
       expect(audioManager.audioContext.createBufferSource).toHaveBeenCalled();
+      
+      // Get the actual mock source created by the implementation
+      const mockSource = audioManager.audioContext.createBufferSource.mock.results[0].value;
       expect(mockSource.buffer).toBe(audioManager.audioBuffers.kick);
       expect(mockSource.connect).toHaveBeenCalledWith(
         audioManager.effectNodes.kick.mainGain
