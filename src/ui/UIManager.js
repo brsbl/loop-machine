@@ -184,7 +184,9 @@ export class UIManager {
    * @param {Object} parsedState 
    */
   updateFromState(parsedState) {
-    if (!parsedState) return;
+    if (!parsedState) {
+      return;
+    }
 
     // Update note buttons
     if (parsedState.notes) {
@@ -266,6 +268,22 @@ export class UIManager {
   }
 
   /**
+   * Escape HTML to prevent XSS attacks
+   * @param {string} text 
+   * @returns {string}
+   */
+  escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, (m) => map[m]);
+  }
+
+  /**
    * Format JSON for display with syntax highlighting
    * @param {*} value 
    * @param {number} indentLevel 
@@ -278,9 +296,12 @@ export class UIManager {
     
     const punc = (char) => {
       let cls = "json-punctuation";
-      if (char === "[" || char === "]") cls += " json-punctuation-bracket";
-      else if (char === "{" || char === "}") cls += " json-punctuation-brace";
-      return `<span class="${cls}">${char}</span>`;
+      if (char === "[" || char === "]") {
+        cls += " json-punctuation-bracket";
+      } else if (char === "{" || char === "}") {
+        cls += " json-punctuation-brace";
+      }
+      return `<span class="${cls}">${this.escapeHtml(char)}</span>`;
     };
 
     if (typeof value === "number") {
@@ -289,30 +310,38 @@ export class UIManager {
         : "json-number";
       return `<span class="${numberClass}">${value}</span>`;
     } else if (typeof value === "string") {
-      return `<span class="json-string">"${value}"</span>`;
+      return `<span class="json-string">"${this.escapeHtml(value)}"</span>`;
     } else if (Array.isArray(value)) {
-      if (value.length === 0) return `${punc("[")}${punc("]")}`;
+      if (value.length === 0) {
+        return `${punc("[")}${punc("]")}`;
+      }
       const items = value.map((item) => this.formatJsonForDisplay(item, 0, null));
       return `${punc("[")}${items.join(punc(",") + " ")}${punc("]")}`;
     } else if (typeof value === "object" && value !== null) {
       const keys = Object.keys(value);
-      if (keys.length === 0) return `${punc("{")}${punc("}")}`;
+      if (keys.length === 0) {
+        return `${punc("{")}${punc("}")}`;
+      }
 
       const items = keys.map((key) => {
         let keyClass = "json-key";
         if (parentKey === null) {
-          if (key === "hihat") keyClass += " json-key-hihat";
-          else if (key === "snare") keyClass += " json-key-snare";
-          else if (key === "kick") keyClass += " json-key-kick";
+          if (key === "hihat") {
+            keyClass += " json-key-hihat";
+          } else if (key === "snare") {
+            keyClass += " json-key-snare";
+          } else if (key === "kick") {
+            keyClass += " json-key-kick";
+          }
         }
-        const formattedKey = `<span class="${keyClass}">"${key}"</span>`;
+        const formattedKey = `<span class="${keyClass}">"${this.escapeHtml(key)}"</span>`;
         const formattedValue = this.formatJsonForDisplay(value[key], indentLevel + 1, key);
         return `\n${nextIndent}${formattedKey}${punc(":")} ${formattedValue}`;
       });
       return `${punc("{")}${items.join(punc(","))}\n${indent}${punc("}")}`;
     }
 
-    return String(value);
+    return this.escapeHtml(String(value));
   }
 
   /**
@@ -339,7 +368,7 @@ export class UIManager {
       if (this.onUrlStateChange) {
         this.onUrlStateChange();
       }
-      console.log("Successfully applied state from JSON editor.");
+      // Successfully applied state from JSON editor
     } else {
       alert(`Error applying JSON state:\n${result.error}`);
       jsonEditor.style.borderColor = "red";
@@ -398,7 +427,9 @@ export class UIManager {
    * @param {number} stepIndex 
    */
   clearStepHighlight(stepIndex) {
-    if (stepIndex < 0) return;
+    if (stepIndex < 0) {
+      return;
+    }
     document
       .querySelectorAll(`.note-button[data-step="${stepIndex}"]`)
       .forEach((btn) => btn.classList.remove("playing-step"));
