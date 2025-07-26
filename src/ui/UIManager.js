@@ -238,10 +238,11 @@ export class UIManager {
     const reverbSliders = document.querySelectorAll(".reverb-slider");
     const delaySliders = document.querySelectorAll(".delay-slider");
 
-    reverbSliders.forEach((slider, index) => {
-      if (index < INSTRUMENTS.length) {
+    reverbSliders.forEach((slider) => {
+      const trackIndex = parseInt(slider.dataset.track);
+      if (trackIndex < INSTRUMENTS.length) {
         slider.addEventListener("input", (e) => {
-          const instrument = INSTRUMENTS[index];
+          const instrument = INSTRUMENTS[trackIndex];
           this.audioManager.updateEffect(instrument.id, "reverb", e.target.value);
           
           if (this.onSliderChange) {
@@ -255,10 +256,11 @@ export class UIManager {
       }
     });
 
-    delaySliders.forEach((slider, index) => {
-      if (index < INSTRUMENTS.length) {
+    delaySliders.forEach((slider) => {
+      const trackIndex = parseInt(slider.dataset.track);
+      if (trackIndex < INSTRUMENTS.length) {
         slider.addEventListener("input", (e) => {
-          const instrument = INSTRUMENTS[index];
+          const instrument = INSTRUMENTS[trackIndex];
           this.audioManager.updateEffect(instrument.id, "delay", e.target.value);
           
           if (this.onSliderChange) {
@@ -296,19 +298,22 @@ export class UIManager {
 
     // Update sliders
     if (parsedState.sliders) {
-      Object.keys(parsedState.sliders).forEach((instrumentId, index) => {
+      Object.keys(parsedState.sliders).forEach((instrumentId) => {
         const values = parsedState.sliders[instrumentId];
+        const instrumentIndex = INSTRUMENTS.findIndex(inst => inst.id === instrumentId);
         
-        const reverbSlider = document.querySelectorAll(".reverb-slider")[index];
-        const delaySlider = document.querySelectorAll(".delay-slider")[index];
+        if (instrumentIndex !== -1) {
+          const reverbSlider = document.querySelector(`.reverb-slider[data-track="${instrumentIndex}"]`);
+          const delaySlider = document.querySelector(`.delay-slider[data-track="${instrumentIndex}"]`);
 
-        if (reverbSlider && values.reverb !== undefined) {
-          reverbSlider.value = values.reverb;
-          this.audioManager.updateEffect(instrumentId, "reverb", values.reverb);
-        }
-        if (delaySlider && values.delay !== undefined) {
-          delaySlider.value = values.delay;
-          this.audioManager.updateEffect(instrumentId, "delay", values.delay);
+          if (reverbSlider && values.reverb !== undefined) {
+            reverbSlider.value = values.reverb;
+            this.audioManager.updateEffect(instrumentId, "reverb", values.reverb);
+          }
+          if (delaySlider && values.delay !== undefined) {
+            delaySlider.value = values.delay;
+            this.audioManager.updateEffect(instrumentId, "delay", values.delay);
+          }
         }
       });
     }
@@ -322,13 +327,14 @@ export class UIManager {
    */
   getSliderValues() {
     const values = {};
-    const reverbSliders = document.querySelectorAll(".reverb-slider");
-    const delaySliders = document.querySelectorAll(".delay-slider");
     
     INSTRUMENTS.forEach((instrument, index) => {
+      const reverbSlider = document.querySelector(`.reverb-slider[data-track="${index}"]`);
+      const delaySlider = document.querySelector(`.delay-slider[data-track="${index}"]`);
+      
       values[instrument.id] = {
-        reverb: reverbSliders[index] ? parseInt(reverbSliders[index].value, 10) : 0,
-        delay: delaySliders[index] ? parseInt(delaySliders[index].value, 10) : 0
+        reverb: reverbSlider ? parseInt(reverbSlider.value, 10) : 0,
+        delay: delaySlider ? parseInt(delaySlider.value, 10) : 0
       };
     });
     
@@ -450,10 +456,11 @@ export class UIManager {
     });
     
     // Reset all sliders
-    document.querySelectorAll(".effect-slider").forEach((slider, index) => {
+    document.querySelectorAll(".effect-slider").forEach((slider) => {
       slider.value = 0;
-      if (index < INSTRUMENTS.length) {
-        const instrument = INSTRUMENTS[Math.floor(index / 2)];
+      const trackIndex = parseInt(slider.dataset.track);
+      if (trackIndex < INSTRUMENTS.length) {
+        const instrument = INSTRUMENTS[trackIndex];
         const effectType = slider.classList.contains("reverb-slider") ? "reverb" : "delay";
         this.audioManager.updateEffect(instrument.id, effectType, 0);
       }
