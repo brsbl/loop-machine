@@ -62,17 +62,10 @@ class LoopMachine {
       this.urlStateHandler.updateUrl();
     };
     
-    // Handle transport controls
-    document.addEventListener("transport-play", () => {
-      if (!this.sequencer.isPlaying) {
-        this.sequencer.toggle();
-      }
-    });
-    
-    document.addEventListener("transport-stop", () => {
-      if (this.sequencer.isPlaying) {
-        this.sequencer.toggle();
-      }
+    // Handle play/stop button
+    const playButton = document.getElementById("play-stop-button");
+    playButton.addEventListener("click", () => {
+      this.sequencer.toggle();
     });
     
     // Handle reset functionality in UI
