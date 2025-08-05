@@ -10,6 +10,7 @@ Loop Machine is a web-based drum sequencer and loop machine built with vanilla J
 - **Code Quality**: ESLint, Prettier, Husky with lint-staged
 - **Development Server**: serve (npm package)
 - **Build Tools**: Babel for test transpilation
+- **Deployment**: Vercel (with custom configuration for static site hosting)
 
 ## Architecture
 
@@ -49,9 +50,10 @@ Loop Machine is a web-based drum sequencer and loop machine built with vanilla J
   /constants     - Application constants and configuration
   script.js      - Main application entry point
 
-/tests          - Jest test files
+/tests          - Jest test files (including null context tests)
 /public         - Static HTML and CSS
 /assets/samples - Audio sample libraries (808, 909 drums)
+/docs           - Documentation (refactoring summary, test setup)
 ```
 
 ## Key Features
@@ -67,14 +69,20 @@ Loop Machine is a web-based drum sequencer and loop machine built with vanilla J
 ### Commands
 - `npm start` / `npm run dev` - Start development server on port 3000
 - `npm test` - Run test suite
-- `npm run lint` - Check code style
-- `npm run format` - Auto-format code
-- `npm run check` - Run all quality checks
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Generate test coverage report
+- `npm run lint` - Check code style with ESLint
+- `npm run lint:fix` - Auto-fix ESLint issues
+- `npm run format` - Auto-format code with Prettier
+- `npm run format:check` - Check code formatting
+- `npm run check` - Run all quality checks (format, lint, test)
+- `npm run clean` - Remove coverage and node_modules directories
 
 ### Code Style
-- ESLint for JavaScript linting
+- ESLint for JavaScript linting (with specific rules for strict equality, curly braces, etc.)
 - Prettier for code formatting
-- Husky pre-commit hooks ensure code quality
+- Husky pre-commit hooks with lint-staged ensure code quality
+- Lint-staged configuration automatically runs ESLint and Prettier on staged files
 
 ## State Management
 The application state includes:
@@ -88,20 +96,42 @@ State is automatically serialized to URL parameters for persistence and sharing.
 
 ## Audio Samples
 The project includes two drum machine sample libraries:
-- 808 samples: Classic TR-808 drum sounds
-- 909 samples: TR-909 drum sounds (multiple variations)
+- 808 samples: Classic TR-808 drum sounds (kick, snare, hi-hat, clap, cymbal, tom, bass)
+- 909 samples: TR-909 drum sounds in three variations (clean, cassette 1, cassette 2)
 
 ## Recent Development
 - Refactored from monolithic script to modular ES6 architecture
-- Added comprehensive test coverage
+- Added comprehensive test coverage including null AudioContext handling
 - Implemented proper separation of concerns
 - Enhanced state management with URL persistence
 - Added JSON state editor for advanced control
+- Added Vercel deployment configuration for hosting
+- Improved error handling for AudioContext initialization failures
 
 ## Testing Strategy
-- Unit tests for core modules (AudioManager, StateManager)
+- Unit tests for core modules (AudioManager, StateManager, Sequencer, UrlStateHandler)
 - Mock Web Audio API for audio-related tests
 - Test coverage includes state transformations and UI interactions
+- Specific tests for null AudioContext scenarios to ensure graceful degradation
+- Integration tests for audio initialization
+
+## Project Configuration
+
+### ESLint Configuration (.eslintrc.json)
+- Browser and ES2021 environment with Jest support
+- Extends eslint:recommended, jest/recommended, and prettier configs
+- Custom rules for code quality (no-console warnings, strict equality, mandatory curly braces)
+- Ignores node_modules, coverage, dist, and build directories
+
+### Vercel Configuration (vercel.json)
+- Static site hosting with no build command required
+- Custom rewrites to serve public/index.html and style.css
+- CORS headers configured for all routes
+
+### Package Configuration
+- Type: ES6 module
+- Main entry: script.js
+- Version: 1.0.0
 
 ## Future Considerations
 - Additional instrument tracks
