@@ -15,6 +15,10 @@ export class Sequencer {
     this.timerID = null;
     this.startTime = null;
     this.animationFrameId = null;
+    
+    // Track all active timers to ensure proper cleanup
+    this.activeTimers = new Set();
+    this.activeAnimationFrames = new Set();
   }
 
   /**
@@ -41,7 +45,7 @@ export class Sequencer {
       await this.audioManager.resume();
     }
 
-    console.log("Starting sequencer");
+    // Starting sequencer
     this.isPlaying = true;
     this.uiManager.setPlayButtonState(true);
     
@@ -61,19 +65,33 @@ export class Sequencer {
       return;
     }
     
-    console.log("Stopping sequencer");
+    // Stopping sequencer
     this.isPlaying = false;
     this.uiManager.setPlayButtonState(false);
     
+    // Clear main timer
     if (this.timerID) {
       window.clearTimeout(this.timerID);
       this.timerID = null;
     }
     
+    // Clear all active timers
+    this.activeTimers.forEach(timerId => {
+      window.clearTimeout(timerId);
+    });
+    this.activeTimers.clear();
+    
+    // Clear main animation frame
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
+    
+    // Clear all active animation frames
+    this.activeAnimationFrames.forEach(frameId => {
+      cancelAnimationFrame(frameId);
+    });
+    this.activeAnimationFrames.clear();
     
     this.uiManager.clearPlayhead();
   }
@@ -93,59 +111,90 @@ export class Sequencer {
    * Audio scheduling loop
    */
   scheduler() {
-    const audioContext = this.audioManager.getContext();
-    if (!audioContext) {
-      console.error("AudioContext lost during scheduling");
-      this.stop();
+    // Check if we should continue
+    if (!this.isPlaying) {
       return;
     }
     
-    const state = this.stateManager.getState();
-    
-    while (this.nextNoteTime < audioContext.currentTime + SEQUENCER.SCHEDULE_AHEAD_TIME) {
-      // Schedule notes for the current step
-      INSTRUMENTS.forEach((instrument) => {
-        if (state[instrument.id][this.currentStep]) {
-          console.log(
-            `Scheduling ${instrument.id} at step ${this.currentStep}, ` +
-            `time ${this.nextNoteTime.toFixed(3)}`
-          );
-          this.audioManager.playSound(instrument.id, this.nextNoteTime);
-        }
-      });
+    try {
+      const audioContext = this.audioManager.getContext();
+      if (!audioContext) {
+        console.error("AudioContext lost during scheduling");
+        this.stop();
+        return;
+      }
+      
+      const state = this.stateManager.getState();
+      
+      while (this.nextNoteTime < audioContext.currentTime + SEQUENCER.SCHEDULE_AHEAD_TIME) {
+        // Schedule notes for the current step
+        INSTRUMENTS.forEach((instrument) => {
+          if (state[instrument.id][this.currentStep]) {
+            // Scheduling instrument at specific time
+            this.audioManager.playSound(instrument.id, this.nextNoteTime);
+          }
+        });
 
-      // Advance to the next step
-      this.nextNoteTime += STEP_TIME;
-      this.currentStep = (this.currentStep + 1) % SEQUENCER.STEPS;
+        // Advance to the next step
+        this.nextNoteTime += STEP_TIME;
+        this.currentStep = (this.currentStep + 1) % SEQUENCER.STEPS;
+      }
+      
+      // Only schedule next check if still playing
+      if (this.isPlaying) {
+        // Clear previous timer from tracking
+        if (this.timerID) {
+          this.activeTimers.delete(this.timerID);
+        }
+        
+        // Schedule next check
+        this.timerID = window.setTimeout(() => this.scheduler(), SEQUENCER.SCHEDULER_INTERVAL);
+        this.activeTimers.add(this.timerID);
+      }
+    } catch (error) {
+      console.error("Error in scheduler:", error);
+      this.stop();
     }
-    
-    // Schedule next check
-    this.timerID = window.setTimeout(() => this.scheduler(), SEQUENCER.SCHEDULER_INTERVAL);
   }
 
   /**
    * Visual update loop
    */
   updateVisuals() {
+    // Check if we should continue
     if (!this.isPlaying) {
       return;
     }
     
-    const audioContext = this.audioManager.getContext();
-    if (!audioContext) {
-      console.error("AudioContext lost during visual update");
+    try {
+      const audioContext = this.audioManager.getContext();
+      if (!audioContext) {
+        console.error("AudioContext lost during visual update");
+        this.stop();
+        return;
+      }
+      
+      const loopDuration = SEQUENCER.STEPS * STEP_TIME;
+      const timeWithinLoop = (audioContext.currentTime - this.startTime) % loopDuration;
+      const visualStep = Math.floor(timeWithinLoop / STEP_TIME);
+      
+      this.uiManager.updatePlayheadPosition(visualStep);
+      
+      // Only continue the loop if still playing
+      if (this.isPlaying) {
+        // Clear previous animation frame from tracking
+        if (this.animationFrameId) {
+          this.activeAnimationFrames.delete(this.animationFrameId);
+        }
+        
+        // Continue the loop
+        this.animationFrameId = requestAnimationFrame(() => this.updateVisuals());
+        this.activeAnimationFrames.add(this.animationFrameId);
+      }
+    } catch (error) {
+      console.error("Error in updateVisuals:", error);
       this.stop();
-      return;
     }
-    
-    const loopDuration = SEQUENCER.STEPS * STEP_TIME;
-    const timeWithinLoop = (audioContext.currentTime - this.startTime) % loopDuration;
-    const visualStep = Math.floor(timeWithinLoop / STEP_TIME);
-    
-    this.uiManager.updatePlayheadPosition(visualStep);
-    
-    // Continue the loop
-    this.animationFrameId = requestAnimationFrame(() => this.updateVisuals());
   }
 
   /**
