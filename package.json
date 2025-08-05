@@ -17,7 +17,11 @@
     "check": "npm run format:check && npm run lint && npm test",
     "clean": "rm -rf coverage node_modules"
   },
-  "keywords": ["drum-machine", "sequencer", "web-audio"],
+  "keywords": [
+    "drum-machine",
+    "sequencer",
+    "web-audio"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
