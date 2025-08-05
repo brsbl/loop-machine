@@ -2,6 +2,7 @@ import { AudioManager } from './audio/index.js';
 import { StateManager, UrlStateHandler } from './state/index.js';
 import { UIManager } from './ui/index.js';
 import { Sequencer } from './core/index.js';
+import { safeGetElementById, safeAddEventListener } from './utils/domHelpers.js';
 
 /**
  * Main application class that coordinates all components
@@ -63,10 +64,12 @@ class LoopMachine {
     };
     
     // Handle play/stop button
-    const playButton = document.getElementById("play-stop-button");
-    playButton.addEventListener("click", () => {
-      this.sequencer.toggle();
-    });
+    const playButton = safeGetElementById("play-stop-button", true);
+    if (playButton) {
+      safeAddEventListener(playButton, "click", () => {
+        this.sequencer.toggle();
+      });
+    }
     
     // Handle reset functionality in UI
     const originalReset = this.uiManager.reset.bind(this.uiManager);

@@ -1,4 +1,12 @@
 import { INSTRUMENTS, SEQUENCER, EFFECTS } from '../constants/index.js';
+import { 
+  safeQuerySelector, 
+  safeGetElementById, 
+  safeQuerySelectorAll,
+  safeAddEventListener,
+  safeClassListAdd,
+  safeClassListRemove 
+} from '../utils/domHelpers.js';
 
 /**
  * Manages UI creation and updates
@@ -26,7 +34,12 @@ export class UIManager {
    * Create instrument track UI
    */
   createInstrumentTracks() {
-    const instrumentTracksContainer = document.querySelector(".instrument-tracks");
+    const instrumentTracksContainer = safeQuerySelector(".instrument-tracks", document, true);
+    
+    if (!instrumentTracksContainer) {
+      console.error("Failed to find instrument tracks container");
+      return;
+    }
     
     INSTRUMENTS.forEach((instrument) => {
       const trackRow = this.createTrackRow(instrument);
@@ -157,23 +170,27 @@ export class UIManager {
    * Setup sidebar functionality
    */
   setupSidebar() {
-    const toggleButton = document.getElementById("toggle-sidebar-button");
-    const applyButton = document.getElementById("apply-json-button");
-    const resetButton = document.getElementById("reset-button");
+    const toggleButton = safeGetElementById("toggle-sidebar-button", true);
+    const applyButton = safeGetElementById("apply-json-button", true);
+    const resetButton = safeGetElementById("reset-button", false);
 
-    toggleButton.addEventListener("click", () => {
-      document.body.classList.toggle("sidebar-visible");
-      if (this.onUrlStateChange) {
-        this.onUrlStateChange();
-      }
-    });
+    if (toggleButton) {
+      safeAddEventListener(toggleButton, "click", () => {
+        document.body.classList.toggle("sidebar-visible");
+        if (this.onUrlStateChange) {
+          this.onUrlStateChange();
+        }
+      });
+    }
 
-    applyButton.addEventListener("click", () => {
-      this.applyJsonState();
-    });
+    if (applyButton) {
+      safeAddEventListener(applyButton, "click", () => {
+        this.applyJsonState();
+      });
+    }
 
     if (resetButton) {
-      resetButton.addEventListener("click", () => {
+      safeAddEventListener(resetButton, "click", () => {
         this.reset();
       });
     }
@@ -189,11 +206,13 @@ export class UIManager {
     // Update note buttons
     if (parsedState.notes) {
       Object.keys(parsedState.notes).forEach(instrumentId => {
-        const buttons = document.querySelectorAll(
+        const buttons = safeQuerySelectorAll(
           `.instrument-track-row[data-instrument="${instrumentId}"] .note-button`
         );
         buttons.forEach((button, i) => {
-          button.classList.toggle("active", parsedState.notes[instrumentId][i]);
+          if (button && parsedState.notes[instrumentId]) {
+            button.classList.toggle("active", parsedState.notes[instrumentId][i]);
+          }
         });
       });
     }
@@ -203,10 +222,10 @@ export class UIManager {
       Object.keys(parsedState.sliders).forEach(instrumentId => {
         const values = parsedState.sliders[instrumentId];
         
-        const reverbSlider = document.querySelector(
+        const reverbSlider = safeQuerySelector(
           `.instrument-track-row[data-instrument="${instrumentId}"] .reverb-slider`
         );
-        const delaySlider = document.querySelector(
+        const delaySlider = safeQuerySelector(
           `.instrument-track-row[data-instrument="${instrumentId}"] .delay-slider`
         );
 
@@ -232,10 +251,10 @@ export class UIManager {
     const values = {};
     
     INSTRUMENTS.forEach((instrument) => {
-      const reverbSlider = document.querySelector(
+      const reverbSlider = safeQuerySelector(
         `.instrument-track-row[data-instrument="${instrument.id}"] .reverb-slider`
       );
-      const delaySlider = document.querySelector(
+      const delaySlider = safeQuerySelector(
         `.instrument-track-row[data-instrument="${instrument.id}"] .delay-slider`
       );
       
@@ -252,7 +271,12 @@ export class UIManager {
    * Update JSON editor with current state
    */
   updateJsonEditor() {
-    const jsonEditor = document.getElementById("json-editor");
+    const jsonEditor = safeGetElementById("json-editor");
+    if (!jsonEditor) {
+      console.warn("JSON editor element not found");
+      return;
+    }
+    
     const currentState = this.stateManager.getStateAsJson(this.getSliderValues());
     
     try {
@@ -319,7 +343,12 @@ export class UIManager {
    * Apply state from JSON editor
    */
   applyJsonState() {
-    const jsonEditor = document.getElementById("json-editor");
+    const jsonEditor = safeGetElementById("json-editor");
+    if (!jsonEditor) {
+      console.error("JSON editor element not found");
+      return;
+    }
+    
     let newState;
     
     try {
@@ -353,16 +382,21 @@ export class UIManager {
     this.stateManager.reset();
     
     // Reset all note buttons
-    document.querySelectorAll(".note-button").forEach(button => {
-      button.classList.remove("active");
+    safeQuerySelectorAll(".note-button").forEach(button => {
+      safeClassListRemove(button, "active");
     });
     
     // Reset all sliders
-    document.querySelectorAll(".effect-slider").forEach(slider => {
-      slider.value = 0;
-      const instrumentId = slider.closest(".instrument-track-row").dataset.instrument;
-      const effectType = slider.dataset.effect;
-      this.audioManager.updateEffect(instrumentId, effectType, 0);
+    safeQuerySelectorAll(".effect-slider").forEach(slider => {
+      if (slider) {
+        slider.value = 0;
+        const trackRow = slider.closest(".instrument-track-row");
+        if (trackRow && trackRow.dataset.instrument) {
+          const instrumentId = trackRow.dataset.instrument;
+          const effectType = slider.dataset.effect;
+          this.audioManager.updateEffect(instrumentId, effectType, 0);
+        }
+      }
     });
     
     if (this.onUrlStateChange) {
@@ -399,9 +433,8 @@ export class UIManager {
    */
   clearStepHighlight(stepIndex) {
     if (stepIndex < 0) return;
-    document
-      .querySelectorAll(`.note-button[data-step="${stepIndex}"]`)
-      .forEach((btn) => btn.classList.remove("playing-step"));
+    safeQuerySelectorAll(`.note-button[data-step="${stepIndex}"]`)
+      .forEach((btn) => safeClassListRemove(btn, "playing-step"));
   }
 
   /**
@@ -409,9 +442,8 @@ export class UIManager {
    * @param {number} stepIndex 
    */
   highlightStep(stepIndex) {
-    document
-      .querySelectorAll(`.note-button[data-step="${stepIndex}"]`)
-      .forEach((btn) => btn.classList.add("playing-step"));
+    safeQuerySelectorAll(`.note-button[data-step="${stepIndex}"]`)
+      .forEach((btn) => safeClassListAdd(btn, "playing-step"));
   }
 
   /**
@@ -419,7 +451,7 @@ export class UIManager {
    * @param {boolean} enabled 
    */
   setPlayButtonEnabled(enabled) {
-    const playButton = document.getElementById("play-stop-button");
+    const playButton = safeGetElementById("play-stop-button");
     if (playButton) {
       playButton.disabled = !enabled;
     }
@@ -430,7 +462,7 @@ export class UIManager {
    * @param {boolean} isPlaying 
    */
   setPlayButtonState(isPlaying) {
-    const playButton = document.getElementById("play-stop-button");
+    const playButton = safeGetElementById("play-stop-button");
     if (playButton) {
       playButton.classList.toggle("playing", isPlaying);
     }
