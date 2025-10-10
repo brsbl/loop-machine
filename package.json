@@ -15,14 +15,21 @@
     "format": "prettier --write \"src/**/*.js\" \"tests/**/*.js\" \"*.{json,md}\"",
     "format:check": "prettier --check \"src/**/*.js\" \"tests/**/*.js\" \"*.{json,md}\"",
     "check": "npm run format:check && npm run lint && npm test",
-    "clean": "rm -rf coverage node_modules"
+    "clean": "rm -rf coverage node_modules",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
-  "keywords": ["drum-machine", "sequencer", "web-audio"],
+  "keywords": [
+    "drum-machine",
+    "sequencer",
+    "web-audio"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.23.0",
     "@babel/preset-env": "^7.23.0",
+    "@playwright/test": "^1.56.0",
     "babel-jest": "^29.7.0",
     "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",

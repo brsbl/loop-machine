@@ -70,9 +70,11 @@ npm install
 ### Running Tests
 
 ```bash
-npm test                # Run all tests
+npm test                # Run unit tests with Jest
 npm run test:watch      # Run tests in watch mode
 npm run test:coverage   # Run tests with coverage report
+npm run test:e2e        # Run Playwright end-to-end tests headless
+npm run test:e2e:ui     # Open Playwright UI mode for debugging
 ```
 
 ### Code Quality
@@ -84,6 +86,22 @@ npm run format          # Format code with Prettier
 npm run format:check    # Check code formatting
 npm run check           # Run all checks (format, lint, test)
 ```
+
+### End-to-End Testing
+
+Playwright is configured in `playwright.config.js` to spin up the development server automatically.
+
+1. Install the browsers once: `npx playwright install`
+2. On Linux environments, ensure system dependencies are present: `npx playwright install-deps`
+3. Run the tests with `npm run test:e2e`
+
+Test reports are written to `playwright-report/` and `test-results/`, both ignored by git.
+
+### Screenshot Artifacts
+
+When automation agents capture UI screenshots for testing, store them under `tests/screenshots/`.
+Create a branch-specific subdirectory named exactly after the working branch (for example, `tests/screenshots/feature-branch-name/`).
+Generate the screenshots against a fresh build so that artifacts reflect the latest code state before opening or updating a PR.
 
 ### Development Server
 
