@@ -32,7 +32,6 @@ function DrumMachine({ instruments }) {
           onToggle={sequencer.toggleStep}
           trackSettings={sequencer.trackSettings}
           onTrackSettingsChange={sequencer.updateTrackSettings}
-          onEffectChange={audioEngine.setEffect}
           bpm={sequencer.bpm}
           isPlaying={sequencer.isPlaying}
           isLoading={audioEngine.isLoading}

@@ -1,6 +1,6 @@
 /**
  * URL State utilities for persisting sequencer state in URL
- * Uses compact encoding: notes as hex, effects as single chars
+ * Uses compact encoding: notes as hex, settings encoded
  */
 
 // Helper: Boolean array to hex string (4 chars for 16 steps)
@@ -16,38 +16,41 @@ function hexToState(hexString, steps) {
   return binaryString.split('').map(char => char === '1')
 }
 
-// Helper: Convert slider value (0-10) to char ('0'-'9', 'a')
-function valueToChar(val) {
-  const num = parseInt(val, 10)
-  if (num >= 0 && num <= 9) return String(num)
-  if (num === 10) return 'a'
-  return '0'
+// Helper: Encode float 0-1 to 2 hex chars (0-255)
+function floatToHex(val) {
+  const clamped = Math.max(0, Math.min(1, val))
+  const int = Math.round(clamped * 255)
+  return int.toString(16).padStart(2, '0')
 }
 
-// Helper: Convert char back to slider value (0-10)
-function charToValue(char) {
-  if (char >= '0' && char <= '9') return parseInt(char, 10)
-  if (char === 'a') return 10
-  return 0
+// Helper: Decode 2 hex chars to float 0-1
+function hexToFloat(hex) {
+  if (!hex || hex.length !== 2) return 0.8
+  const int = parseInt(hex, 16)
+  return int / 255
 }
 
 /**
  * Encode current state to URL
+ * Format: notes_settings
+ * - notes: 4 hex chars per instrument (16 steps)
+ * - settings: 6 hex chars per instrument (volume 2, attack 2, decay 2)
  */
 export function encodeStateToUrl(pattern, trackSettings, instruments) {
   let notesHex = ''
-  let effectsChars = ''
+  let settingsHex = ''
 
   instruments.forEach(instrument => {
     // Notes (16 steps -> 4 hex chars)
     notesHex += stateToHex(pattern[instrument.id] || [])
-    // Effects (reverb, delay as single chars each)
+    // Settings (volume, reverb, filter as 2 hex chars each)
     const settings = trackSettings[instrument.id] || {}
-    effectsChars += valueToChar(settings.reverb || 0)
-    effectsChars += valueToChar(settings.delay || 0)
+    settingsHex += floatToHex(settings.volume ?? 0.8)
+    settingsHex += floatToHex(settings.reverb ?? 0)
+    settingsHex += floatToHex(settings.filter ?? 1)
   })
 
-  const compactState = `${notesHex}_${effectsChars}`
+  const compactState = `${notesHex}_${settingsHex}`
   const newUrl = window.location.pathname + '?s=' + compactState
   window.history.replaceState(null, '', newUrl)
 }
@@ -64,15 +67,16 @@ export function decodeStateFromUrl(instruments, steps) {
   }
 
   const compactState = params.get('s')
-  const expectedLength = instruments.length * 4 + 1 + instruments.length * 2 // 4 hex + _ + 2 chars per instrument
+  // Expected: 4 hex per instrument for notes + _ + 6 hex per instrument for settings
+  const expectedLength = instruments.length * 4 + 1 + instruments.length * 6
 
   if (compactState && compactState.length === expectedLength && compactState.includes('_')) {
     try {
-      const [notesPart, effectsPart] = compactState.split('_')
+      const [notesPart, settingsPart] = compactState.split('_')
       const pattern = {}
       const trackSettings = {}
       let noteOffset = 0
-      let effectOffset = 0
+      let settingsOffset = 0
 
       instruments.forEach(instrument => {
         // Load Notes
@@ -80,17 +84,18 @@ export function decodeStateFromUrl(instruments, steps) {
         pattern[instrument.id] = hexToState(noteHex, steps)
         noteOffset += 4
 
-        // Load Effects
-        const reverbChar = effectsPart[effectOffset]
-        const delayChar = effectsPart[effectOffset + 1]
+        // Load Settings (volume, reverb, filter)
+        const volumeHex = settingsPart.substring(settingsOffset, settingsOffset + 2)
+        const reverbHex = settingsPart.substring(settingsOffset + 2, settingsOffset + 4)
+        const filterHex = settingsPart.substring(settingsOffset + 4, settingsOffset + 6)
         trackSettings[instrument.id] = {
-          volume: 0.8,
+          volume: hexToFloat(volumeHex),
+          reverb: hexToFloat(reverbHex),
+          filter: hexToFloat(filterHex),
           muted: false,
           solo: false,
-          reverb: charToValue(reverbChar),
-          delay: charToValue(delayChar)
         }
-        effectOffset += 2
+        settingsOffset += 6
       })
 
       result.pattern = pattern

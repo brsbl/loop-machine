@@ -1,26 +1,22 @@
 function TransportControls({ bpm, isPlaying, isLoading, onPlayStop, onReset }) {
   return (
     <div className="transport-controls">
-      <div className="transport-top-row">
-        <div className="reset-section">
-          <span className="transport-label">RESET</span>
-          <button id="reset-button" onClick={onReset}></button>
-        </div>
-        <div className="tempo-section">
-          <span className="tempo-label">TEMPO</span>
-          <div className="tempo-display">
-            <span id="tempo-value">{bpm}</span>
-          </div>
-        </div>
+      <span className="transport-label">TEMPO</span>
+      <div className="transport-display">
+        <span className="transport-value">{bpm}</span>
       </div>
-      <button
-        id="play-stop-button"
-        onClick={onPlayStop}
-        disabled={isLoading}
-        className={isPlaying ? 'playing' : ''}
-      >
-        {isPlaying ? 'STOP' : 'START'}
-      </button>
+      <div className="transport-buttons">
+        <button className="transport-button" onClick={onReset}>
+          Reset
+        </button>
+        <button
+          className={`transport-button ${isPlaying ? 'active' : ''}`}
+          onClick={onPlayStop}
+          disabled={isLoading}
+        >
+          {isPlaying ? 'Stop' : 'Start'}
+        </button>
+      </div>
     </div>
   )
 }
