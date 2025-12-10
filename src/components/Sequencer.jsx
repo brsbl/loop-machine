@@ -51,23 +51,20 @@ function Sequencer({
         ))}
       </div>
 
-      {/* Transport controls row - under sliders */}
-      <div className="transport-row">
-        <div className="transport-spacer"></div>
-        <TransportControls
-          bpm={bpm}
-          isPlaying={isPlaying}
-          isLoading={isLoading}
-          onPlayStop={onPlayStop}
-          onReset={onReset}
-        />
-      </div>
-
-      {/* Keyboard wrapper - centers keyboard with pads */}
-      <div className="keyboard-wrapper">
+      {/* Bottom row: Keyboard + Transport */}
+      <div className="bottom-row">
         <div className="instrument-label-spacer"></div>
         <div className="keyboard-center">
           {children}
+        </div>
+        <div className="transport-section">
+          <TransportControls
+            bpm={bpm}
+            isPlaying={isPlaying}
+            isLoading={isLoading}
+            onPlayStop={onPlayStop}
+            onReset={onReset}
+          />
         </div>
       </div>
     </div>
