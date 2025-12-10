@@ -1,3 +1,10 @@
+import {
+  stateToHex,
+  hexToState,
+  valueToChar,
+  charToValue,
+} from "./src/helpers.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM Content Loaded - Script starting...");
   const instrumentTracksContainer =
@@ -194,36 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // --- URL State Handling (Compact Custom String + Sidebar) ---
-
-  // Helper: Boolean array (16 steps) to 4-char hex string
-  function stateToHex(stateArray) {
-    const binaryString = stateArray.map((val) => (val ? "1" : "0")).join("");
-    return parseInt(binaryString, 2).toString(16).padStart(4, "0");
-  }
-
-  // Helper: Convert 4-char hex string back to boolean array (16 steps)
-  function hexToState(hexString) {
-    if (!hexString || hexString.length !== 4) return Array(steps).fill(false);
-    const binaryString = parseInt(hexString, 16)
-      .toString(2)
-      .padStart(steps, "0");
-    return binaryString.split("").map((char) => char === "1");
-  }
-
-  // Helper: Convert slider value (0-10) to char ('0'-'9', 'a')
-  function valueToChar(val) {
-    const num = parseInt(val, 10);
-    if (num >= 0 && num <= 9) return String(num);
-    if (num === 10) return "a";
-    return "0"; // Default fallback
-  }
-
-  // Helper: Convert char ('0'-'9', 'a') back to slider value (0-10)
-  function charToValue(char) {
-    if (char >= "0" && char <= "9") return parseInt(char, 10);
-    if (char === "a") return 10;
-    return 0; // Default fallback
-  }
+  // Helper functions (stateToHex, hexToState, valueToChar, charToValue) are imported from src/helpers.js
 
   // Reads current state (sequencer + sidebar), creates compact string, and updates URL
   function updateUrlState() {
