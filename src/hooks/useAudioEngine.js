@@ -8,7 +8,7 @@ export function useAudioEngine(instruments) {
   const [isLoading, setIsLoading] = useState(true)
   const audioContextRef = useRef(null)
   const audioBuffersRef = useRef({})
-  const gainNodesRef = useRef({})
+  const effectNodesRef = useRef({})
   const initCountRef = useRef(0)
 
   // Initialize audio context and load all instrument samples
@@ -25,11 +25,44 @@ export function useAudioEngine(instruments) {
         const ctx = new (window.AudioContext || window.webkitAudioContext)()
         audioContextRef.current = ctx
 
-        // Create gain nodes for each instrument
+        // Create effect nodes for each instrument
         instruments.forEach(instrument => {
-          const gainNode = ctx.createGain()
-          gainNode.connect(ctx.destination)
-          gainNodesRef.current[instrument.id] = gainNode
+          const mainGain = ctx.createGain()
+          const reverbGain = ctx.createGain()
+          const delayNode = ctx.createDelay(1.0)
+          const delayFeedback = ctx.createGain()
+          const delayWetGain = ctx.createGain()
+          const outputGain = ctx.createGain()
+
+          // Initial settings
+          delayNode.delayTime.value = 0
+          delayFeedback.gain.value = 0
+          delayWetGain.gain.value = 0
+          reverbGain.gain.value = 0
+
+          // Signal routing:
+          // mainGain -> outputGain (dry)
+          // mainGain -> reverbGain -> outputGain
+          // mainGain -> delayNode -> delayFeedback -> delayNode (feedback loop)
+          //                       -> delayWetGain -> outputGain
+          mainGain.connect(outputGain) // Dry signal
+          mainGain.connect(reverbGain)
+          reverbGain.connect(outputGain)
+          mainGain.connect(delayNode)
+          delayNode.connect(delayFeedback)
+          delayFeedback.connect(delayNode)
+          delayNode.connect(delayWetGain)
+          delayWetGain.connect(outputGain)
+          outputGain.connect(ctx.destination)
+
+          effectNodesRef.current[instrument.id] = {
+            mainGain,
+            reverbGain,
+            delayNode,
+            delayFeedback,
+            delayWetGain,
+            outputGain,
+          }
         })
 
         // Load all samples
@@ -83,11 +116,11 @@ export function useAudioEngine(instruments) {
     const source = audioContextRef.current.createBufferSource()
     source.buffer = audioBuffersRef.current[instrumentId]
 
-    // Connect through gain node for volume control
-    const gainNode = gainNodesRef.current[instrumentId]
-    if (gainNode) {
-      gainNode.gain.value = trackSettings?.volume ?? 0.8
-      source.connect(gainNode)
+    // Connect through effect chain
+    const nodes = effectNodesRef.current[instrumentId]
+    if (nodes) {
+      nodes.mainGain.gain.value = trackSettings?.volume ?? 0.8
+      source.connect(nodes.mainGain)
     } else {
       source.connect(audioContextRef.current.destination)
     }
@@ -97,9 +130,32 @@ export function useAudioEngine(instruments) {
 
   // Set volume for a specific track
   const setTrackVolume = useCallback((instrumentId, volume) => {
-    const gainNode = gainNodesRef.current[instrumentId]
-    if (gainNode && audioContextRef.current) {
-      gainNode.gain.setValueAtTime(volume, audioContextRef.current.currentTime)
+    const nodes = effectNodesRef.current[instrumentId]
+    if (nodes && audioContextRef.current) {
+      nodes.mainGain.gain.setValueAtTime(volume, audioContextRef.current.currentTime)
+    }
+  }, [])
+
+  // Set effect parameters for a track
+  const setEffect = useCallback((instrumentId, effectType, value) => {
+    const nodes = effectNodesRef.current[instrumentId]
+    if (!nodes || !audioContextRef.current) return
+
+    const sliderValue = parseInt(value, 10)
+    const currentTime = audioContextRef.current.currentTime
+
+    if (effectType === 'reverb') {
+      const reverbAmount = sliderValue / 10
+      nodes.reverbGain.gain.setValueAtTime(reverbAmount, currentTime)
+    }
+
+    if (effectType === 'delay') {
+      const delayTime = (sliderValue / 10) * 0.5
+      const feedbackAmount = (sliderValue / 10) * 0.7
+      const wetAmount = (sliderValue / 10) * 0.5
+      nodes.delayNode.delayTime.setValueAtTime(delayTime, currentTime)
+      nodes.delayFeedback.gain.setValueAtTime(feedbackAmount, currentTime)
+      nodes.delayWetGain.gain.setValueAtTime(wetAmount, currentTime)
     }
   }, [])
 
@@ -118,17 +174,40 @@ export function useAudioEngine(instruments) {
   // Load a new instrument dynamically
   const loadInstrument = useCallback(async (instrument) => {
     if (!audioContextRef.current) return false
+    const ctx = audioContextRef.current
 
     try {
-      // Create gain node
-      const gainNode = audioContextRef.current.createGain()
-      gainNode.connect(audioContextRef.current.destination)
-      gainNodesRef.current[instrument.id] = gainNode
+      // Create effect nodes
+      const mainGain = ctx.createGain()
+      const reverbGain = ctx.createGain()
+      const delayNode = ctx.createDelay(1.0)
+      const delayFeedback = ctx.createGain()
+      const delayWetGain = ctx.createGain()
+      const outputGain = ctx.createGain()
+
+      delayNode.delayTime.value = 0
+      delayFeedback.gain.value = 0
+      delayWetGain.gain.value = 0
+      reverbGain.gain.value = 0
+
+      mainGain.connect(outputGain)
+      mainGain.connect(reverbGain)
+      reverbGain.connect(outputGain)
+      mainGain.connect(delayNode)
+      delayNode.connect(delayFeedback)
+      delayFeedback.connect(delayNode)
+      delayNode.connect(delayWetGain)
+      delayWetGain.connect(outputGain)
+      outputGain.connect(ctx.destination)
+
+      effectNodesRef.current[instrument.id] = {
+        mainGain, reverbGain, delayNode, delayFeedback, delayWetGain, outputGain,
+      }
 
       // Load sample
       const response = await fetch(instrument.path)
       const arrayBuffer = await response.arrayBuffer()
-      audioBuffersRef.current[instrument.id] = await audioContextRef.current.decodeAudioData(arrayBuffer)
+      audioBuffersRef.current[instrument.id] = await ctx.decodeAudioData(arrayBuffer)
 
       return true
     } catch (error) {
@@ -140,6 +219,7 @@ export function useAudioEngine(instruments) {
     isLoading,
     playSound,
     setTrackVolume,
+    setEffect,
     resumeContext,
     getCurrentTime,
     loadInstrument,

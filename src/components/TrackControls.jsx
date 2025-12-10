@@ -2,11 +2,11 @@ import { memo } from 'react'
 
 const TrackControls = memo(function TrackControls({
   volume,
-  muted,
-  solo,
+  reverb,
+  delay,
   onVolumeChange,
-  onMuteToggle,
-  onSoloToggle,
+  onReverbChange,
+  onDelayChange,
 }) {
   return (
     <div className="track-controls">
@@ -20,20 +20,28 @@ const TrackControls = memo(function TrackControls({
         onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
         title={`Volume: ${Math.round(volume * 100)}%`}
       />
-      <button
-        className={`track-button mute-button ${muted ? 'active' : ''}`}
-        onClick={onMuteToggle}
-        title="Mute"
-      >
-        M
-      </button>
-      <button
-        className={`track-button solo-button ${solo ? 'active' : ''}`}
-        onClick={onSoloToggle}
-        title="Solo"
-      >
-        S
-      </button>
+      <div className="effect-sliders">
+        <input
+          type="range"
+          className="effect-slider reverb-slider"
+          min="0"
+          max="10"
+          step="1"
+          value={reverb}
+          onChange={(e) => onReverbChange(parseInt(e.target.value, 10))}
+          title={`Reverb: ${reverb}`}
+        />
+        <input
+          type="range"
+          className="effect-slider delay-slider"
+          min="0"
+          max="10"
+          step="1"
+          value={delay}
+          onChange={(e) => onDelayChange(parseInt(e.target.value, 10))}
+          title={`Delay: ${delay}`}
+        />
+      </div>
     </div>
   )
 })

@@ -18,26 +18,30 @@ function DrumMachine({ instruments }) {
   }
 
   return (
-    <div className="drum-machine">
-      <LoadingOverlay isLoading={audioEngine.isLoading} />
+    <div className="app-container">
+      <div className="drum-machine">
+        <LoadingOverlay isLoading={audioEngine.isLoading} />
 
-      <Header bpm={sequencer.bpm} />
+        <Header />
 
-      <Sequencer
-        instruments={instruments}
-        steps={sequencer.steps}
-        pattern={sequencer.pattern}
-        currentStep={sequencer.currentStep}
-        onToggle={sequencer.toggleStep}
-        trackSettings={sequencer.trackSettings}
-        onTrackSettingsChange={sequencer.updateTrackSettings}
-        isPlaying={sequencer.isPlaying}
-        isLoading={audioEngine.isLoading}
-        onPlayStop={handlePlayStop}
-        onReset={sequencer.resetPattern}
-      />
-
-      <Keyboard />
+        <Sequencer
+          instruments={instruments}
+          steps={sequencer.steps}
+          pattern={sequencer.pattern}
+          currentStep={sequencer.currentStep}
+          onToggle={sequencer.toggleStep}
+          trackSettings={sequencer.trackSettings}
+          onTrackSettingsChange={sequencer.updateTrackSettings}
+          onEffectChange={audioEngine.setEffect}
+          bpm={sequencer.bpm}
+          isPlaying={sequencer.isPlaying}
+          isLoading={audioEngine.isLoading}
+          onPlayStop={handlePlayStop}
+          onReset={sequencer.resetPattern}
+        >
+          <Keyboard />
+        </Sequencer>
+      </div>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { createInitialPattern, createInitialTrackSettings, SEQUENCER_CONFIG } from '../config/instruments'
+import { decodeStateFromUrl, encodeStateToUrl } from '../utils/urlState'
 
 /**
  * Custom hook for managing sequencer state and playback timing
@@ -8,8 +9,15 @@ export function useSequencer(instruments, audioEngine) {
   const { steps, bpm, scheduleAheadTime, schedulerInterval } = SEQUENCER_CONFIG
   const stepTime = 60 / bpm / 4 // Time per 16th note
 
-  const [pattern, setPattern] = useState(() => createInitialPattern(instruments, steps))
-  const [trackSettings, setTrackSettings] = useState(() => createInitialTrackSettings(instruments))
+  // Initialize state from URL if available
+  const [pattern, setPattern] = useState(() => {
+    const urlState = decodeStateFromUrl(instruments, steps)
+    return urlState.pattern || createInitialPattern(instruments, steps)
+  })
+  const [trackSettings, setTrackSettings] = useState(() => {
+    const urlState = decodeStateFromUrl(instruments, steps)
+    return urlState.trackSettings || createInitialTrackSettings(instruments)
+  })
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentStep, setCurrentStep] = useState(-1)
 
@@ -157,6 +165,11 @@ export function useSequencer(instruments, audioEngine) {
       [instrument.id]: { volume: 0.8, muted: false, solo: false, reverb: 0, delay: 0 }
     }))
   }, [steps])
+
+  // Persist state to URL when pattern or trackSettings changes
+  useEffect(() => {
+    encodeStateToUrl(pattern, trackSettings, instruments)
+  }, [pattern, trackSettings, instruments])
 
   // Cleanup on unmount
   useEffect(() => {

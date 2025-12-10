@@ -39,7 +39,7 @@ export const DEFAULT_TRACK_SETTINGS = {
  * Sequencer configuration
  */
 export const SEQUENCER_CONFIG = {
-  steps: 12,
+  steps: 16,
   bpm: 120,
   scheduleAheadTime: 0.1, // seconds
   schedulerInterval: 25,   // milliseconds

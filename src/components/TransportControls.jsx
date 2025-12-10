@@ -1,6 +1,12 @@
-function TransportControls({ isPlaying, isLoading, onPlayStop, onReset }) {
+function TransportControls({ bpm, isPlaying, isLoading, onPlayStop, onReset }) {
   return (
-    <div className="right-controls">
+    <div className="transport-controls">
+      <div className="tempo-section">
+        <span className="tempo-label">TEMPO</span>
+        <div className="tempo-display">
+          <span id="tempo-value">{bpm}</span>
+        </div>
+      </div>
       <button id="reset-button" onClick={onReset}>
         RESET
       </button>
