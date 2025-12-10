@@ -5,6 +5,21 @@
   padding: 0;
 }
 
+/* --- ACCESSIBILITY STYLES --- */
+
+/* Visually hidden class for screen reader only content */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 body {
   font-family: sans-serif;
   background-color: #f8f8f8;
@@ -67,6 +82,12 @@ body {
 #play-stop-button:hover {
   filter: brightness(1.1); /* Slightly brighten on hover */
   background-color: #f97051;
+}
+
+/* Focus-visible styles for play/stop button */
+#play-stop-button:focus-visible {
+  outline: 3px solid #0066ff;
+  outline-offset: 3px;
 }
 
 /* Style for when playing */
@@ -193,6 +214,13 @@ body {
     transform 0.05s ease-out; /* Add filter/transform */
 }
 
+/* Focus-visible styles for note buttons */
+.note-button:focus-visible {
+  outline: 3px solid #0066ff;
+  outline-offset: 2px;
+  z-index: 10;
+}
+
 /* Specific active colors - Apply OVER the general active styles */
 [data-instrument="hihat"] .note-button.active {
   background-color: #ff5858; /* Reddish */
@@ -310,6 +338,12 @@ body {
     /* Bottom shadow */ inset 0 1px 0 rgba(255, 255, 255, 0.5); /* Top highlight */
 }
 
+/* Focus-visible styles for effect sliders */
+.effect-slider:focus-visible {
+  outline: 3px solid #0066ff;
+  outline-offset: 2px;
+}
+
 /* Specific Thumb Colors based on image */
 [data-instrument="hihat"] .reverb-slider::-webkit-slider-thumb {
   background: #e4c078; /* Gold-ish */
@@ -412,6 +446,12 @@ body.sidebar-visible #toggle-sidebar-button::before {
   filter: brightness(1.05); /* Keep hover effect */
 }
 
+/* Focus-visible styles for toggle sidebar button */
+#toggle-sidebar-button:focus-visible {
+  outline: 3px solid #0066ff;
+  outline-offset: 3px;
+}
+
 #reset-button {
   padding: 6px;
   background-color: #f0ebe0; /* Match Apply button background */
@@ -433,6 +473,12 @@ body.sidebar-visible #toggle-sidebar-button::before {
 
 #reset-button:hover {
   background-color: #e8e3d8;
+}
+
+/* Focus-visible styles for reset button */
+#reset-button:focus-visible {
+  outline: 3px solid #0066ff;
+  outline-offset: 2px;
 }
 
 #reset-button:active {
@@ -557,6 +603,12 @@ body.sidebar-visible #toggle-sidebar-button::before {
 #apply-json-button:hover {
   background-color: #e8e3d8; /* Slightly darker on hover */
   filter: none; /* Remove brightness filter */
+}
+
+/* Focus-visible styles for apply JSON button */
+#apply-json-button:focus-visible {
+  outline: 3px solid #0066ff;
+  outline-offset: 2px;
 }
 
 #apply-json-button:active {

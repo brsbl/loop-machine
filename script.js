@@ -133,17 +133,27 @@ document.addEventListener("DOMContentLoaded", () => {
       const button = document.createElement("button");
       button.classList.add("note-button");
       button.dataset.step = i;
+      button.dataset.instrument = instrument.id;
       // Add visual grouping for beats
       if (i % 4 === 0) {
         button.classList.add("beat-start");
       }
 
+      // Accessibility attributes
+      button.setAttribute("tabindex", "0");
+      button.setAttribute("role", "switch");
+      button.setAttribute("aria-pressed", "false");
+      button.setAttribute("aria-label", `${instrument.name}, step ${i + 1}`);
+
       button.addEventListener("click", () => {
-        sequenceState[instrument.id][i] = !sequenceState[instrument.id][i];
-        button.classList.toggle("active", sequenceState[instrument.id][i]);
-        updateUrlState();
-        updateJsonEditor();
+        toggleNote(instrument.id, i, button);
       });
+
+      // Keyboard navigation handler
+      button.addEventListener("keydown", (e) => {
+        handleNoteButtonKeydown(e, instrument.id, i);
+      });
+
       notesContainer.appendChild(button);
     }
     trackRow.appendChild(notesContainer);
@@ -162,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
     reverbSlider.value = 0;
     reverbSlider.classList.add("effect-slider", "reverb-slider");
     reverbSlider.dataset.effect = "reverb";
+    reverbSlider.setAttribute("aria-label", `${instrument.name} reverb`);
     reverbSlider.addEventListener("input", (e) => {
       updateEffect(instrument.id, "reverb", e.target.value);
       updateUrlState();
@@ -180,6 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
     delaySlider.value = 0;
     delaySlider.classList.add("effect-slider", "delay-slider");
     delaySlider.dataset.effect = "delay";
+    delaySlider.setAttribute("aria-label", `${instrument.name} delay`);
     delaySlider.addEventListener("input", (e) => {
       updateEffect(instrument.id, "delay", e.target.value);
       updateUrlState();
@@ -192,6 +204,79 @@ document.addEventListener("DOMContentLoaded", () => {
 
     instrumentTracksContainer.appendChild(trackRow);
   });
+
+  // --- Helper Functions for Accessibility ---
+
+  // Toggle note state and update aria-pressed
+  function toggleNote(instrumentId, stepIndex, button) {
+    sequenceState[instrumentId][stepIndex] = !sequenceState[instrumentId][stepIndex];
+    const isActive = sequenceState[instrumentId][stepIndex];
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    updateUrlState();
+    updateJsonEditor();
+  }
+
+  // Keyboard navigation for note buttons
+  function handleNoteButtonKeydown(e, instrumentId, stepIndex) {
+    const button = e.target;
+    const allButtons = Array.from(document.querySelectorAll('.note-button'));
+    const currentIndex = allButtons.indexOf(button);
+
+    switch (e.key) {
+      case ' ':
+      case 'Enter':
+        e.preventDefault();
+        toggleNote(instrumentId, stepIndex, button);
+        break;
+
+      case 'ArrowRight':
+        e.preventDefault();
+        if (currentIndex < allButtons.length - 1) {
+          allButtons[currentIndex + 1].focus();
+        }
+        break;
+
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (currentIndex > 0) {
+          allButtons[currentIndex - 1].focus();
+        }
+        break;
+
+      case 'ArrowDown':
+        e.preventDefault();
+        // Move to same step in next instrument (16 steps forward)
+        if (currentIndex + 16 < allButtons.length) {
+          allButtons[currentIndex + 16].focus();
+        }
+        break;
+
+      case 'ArrowUp':
+        e.preventDefault();
+        // Move to same step in previous instrument (16 steps backward)
+        if (currentIndex - 16 >= 0) {
+          allButtons[currentIndex - 16].focus();
+        }
+        break;
+    }
+  }
+
+  // Update play/stop button aria-label based on state
+  function updatePlayStopAriaLabel() {
+    const ariaLiveRegion = document.getElementById('playback-announcer');
+    if (isPlaying) {
+      playStopButton.setAttribute('aria-label', 'Stop playback');
+      if (ariaLiveRegion) {
+        ariaLiveRegion.textContent = 'Playback started';
+      }
+    } else {
+      playStopButton.setAttribute('aria-label', 'Start playback');
+      if (ariaLiveRegion) {
+        ariaLiveRegion.textContent = 'Playback stopped';
+      }
+    }
+  }
 
   // --- URL State Handling (Compact Custom String + Sidebar) ---
 
@@ -307,9 +392,10 @@ document.addEventListener("DOMContentLoaded", () => {
             .querySelectorAll(
               `.instrument-track-row[data-instrument="${instrument.id}"] .note-button`
             )
-            .forEach((button, i) =>
-              button.classList.toggle("active", loadedNotes[i])
-            );
+            .forEach((button, i) => {
+              button.classList.toggle("active", loadedNotes[i]);
+              button.setAttribute("aria-pressed", loadedNotes[i] ? "true" : "false");
+            });
           noteOffset += 4;
           console.log(`Loaded notes for ${instrument.id}: ${noteHex}`);
 
@@ -441,6 +527,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("runScheduler: Starting the loop.");
     isPlaying = true;
     playStopButton.classList.add("playing");
+    updatePlayStopAriaLabel(); // Update accessibility attributes
     currentStep = 0; // Reset sequence position
     startTime = audioContext.currentTime; // Record start time for visual sync
     nextNoteTime = startTime; // Start scheduling immediately
@@ -461,6 +548,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!isPlaying) return;
     isPlaying = false;
     playStopButton.classList.remove("playing");
+    updatePlayStopAriaLabel(); // Update accessibility attributes
     window.clearTimeout(timerID); // Stop audio scheduling
     cancelAnimationFrame(animationFrameId); // Stop visual loop
     // Clear the last highlighted step
@@ -560,6 +648,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Load state from URL after basic setup and audio init attempt
   loadUrlState();
   // console.log("INIT: Called initAudio() and attempted loadStateFromUrl().");
+
+  // Initialize play/stop button aria-label
+  updatePlayStopAriaLabel();
 
   // --- Sidebar Toggle Logic ---
   toggleSidebarButton.addEventListener("click", () => {
@@ -729,9 +820,10 @@ document.addEventListener("DOMContentLoaded", () => {
               .querySelectorAll(
                 `.instrument-track-row[data-instrument="${instrument.id}"] .note-button`
               )
-              .forEach((button, i) =>
-                button.classList.toggle("active", notesAsBooleans[i])
-              );
+              .forEach((button, i) => {
+                button.classList.toggle("active", notesAsBooleans[i]);
+                button.setAttribute("aria-pressed", notesAsBooleans[i] ? "true" : "false");
+              });
             stateApplied = true;
           } catch (e) {
             validationError = e.message; // Store the first validation error
@@ -840,7 +932,10 @@ document.addEventListener("DOMContentLoaded", () => {
         .querySelectorAll(
           `.instrument-track-row[data-instrument="${instrument.id}"] .note-button`
         )
-        .forEach((button) => button.classList.remove("active"));
+        .forEach((button) => {
+          button.classList.remove("active");
+          button.setAttribute("aria-pressed", "false");
+        });
 
       // Reset sliders
       const reverbSlider = document.querySelector(

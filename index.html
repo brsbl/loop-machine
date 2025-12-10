@@ -7,27 +7,27 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div id="sidebar">
+    <aside id="sidebar" aria-label="Pattern state editor">
       <div class="json-editor-title">JSON State</div>
       <pre><code id="json-editor" contenteditable="true" spellcheck="false"></code></pre>
       <button id="apply-json-button">Apply Changes</button>
-    </div>
+    </aside>
 
-    <div class="main-container">
+    <main class="main-container">
       <div class="loop-machine">
         <div class="settings-container">
           <button id="toggle-sidebar-button"></button>
           <button id="reset-button">RESET</button>
         </div>
         <div class="controls">
-          <button id="play-stop-button">
+          <button id="play-stop-button" aria-label="Start playback">
             <div class="button-text-line">START</div>
             <div class="button-separator"></div>
             <div class="button-text-line">STOP</div>
           </button>
         </div>
 
-        <div class="sequencer">
+        <div class="sequencer" role="region" aria-label="Sequencer">
           <div class="beat-labels">
             <div class="beat-label">1</div>
             <div class="beat-label">2</div>
@@ -62,7 +62,10 @@
           <div class="effect-label delay-label">DELAY</div>
         </div>
       </div>
-    </div>
+    </main>
+
+    <!-- Screen reader announcements for playback state -->
+    <div id="playback-announcer" aria-live="polite" aria-atomic="true" class="visually-hidden"></div>
 
     <script src="script.js"></script>
   </body>
