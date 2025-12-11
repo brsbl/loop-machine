@@ -27,11 +27,6 @@ function Sequencer({
             <span key={i}>{i + 1}</span>
           ))}
         </div>
-        <div className="slider-labels">
-          <span className="slider-label">VOL</span>
-          <span className="slider-label">REV</span>
-          <span className="slider-label">DLY</span>
-        </div>
       </div>
 
       {/* Tracks */}
@@ -54,18 +49,16 @@ function Sequencer({
       {/* Bottom row: Keyboard + Transport */}
       <div className="bottom-row">
         <div className="instrument-label-spacer"></div>
-        <div className="keyboard-center">
+        <div className="keyboard-wrapper">
           {children}
         </div>
-        <div className="transport-section">
-          <TransportControls
-            bpm={bpm}
-            isPlaying={isPlaying}
-            isLoading={isLoading}
-            onPlayStop={onPlayStop}
-            onReset={onReset}
-          />
-        </div>
+        <TransportControls
+          bpm={bpm}
+          isPlaying={isPlaying}
+          isLoading={isLoading}
+          onPlayStop={onPlayStop}
+          onReset={onReset}
+        />
       </div>
     </div>
   )

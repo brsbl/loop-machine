@@ -29,10 +29,10 @@ export const DEFAULT_INSTRUMENTS = [
  */
 export const DEFAULT_TRACK_SETTINGS = {
   volume: 0.8,
+  reverb: 0,
+  filter: 1,
   muted: false,
   solo: false,
-  reverb: 0,
-  delay: 0,
 }
 
 /**

@@ -1,47 +1,43 @@
 import { memo } from 'react'
+import Knob from './ui/Knob'
 
 const TrackControls = memo(function TrackControls({
   volume,
   reverb,
-  delay,
+  filter,
   onVolumeChange,
   onReverbChange,
-  onDelayChange,
+  onFilterChange,
 }) {
   return (
     <div className="track-controls">
-      <input
-        type="range"
-        className="volume-slider"
-        min="0"
-        max="1"
-        step="0.01"
+      <Knob
         value={volume}
-        onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
-        title={`Volume: ${Math.round(volume * 100)}%`}
+        onChange={onVolumeChange}
+        min={0}
+        max={1}
+        step={0.01}
+        label="VOL"
+        size={40}
       />
-      <div className="effect-sliders">
-        <input
-          type="range"
-          className="effect-slider reverb-slider"
-          min="0"
-          max="10"
-          step="1"
-          value={reverb}
-          onChange={(e) => onReverbChange(parseInt(e.target.value, 10))}
-          title={`Reverb: ${reverb}`}
-        />
-        <input
-          type="range"
-          className="effect-slider delay-slider"
-          min="0"
-          max="10"
-          step="1"
-          value={delay}
-          onChange={(e) => onDelayChange(parseInt(e.target.value, 10))}
-          title={`Delay: ${delay}`}
-        />
-      </div>
+      <Knob
+        value={reverb}
+        onChange={onReverbChange}
+        min={0}
+        max={1}
+        step={0.01}
+        label="REV"
+        size={40}
+      />
+      <Knob
+        value={filter}
+        onChange={onFilterChange}
+        min={0}
+        max={1}
+        step={0.01}
+        label="FLT"
+        size={40}
+      />
     </div>
   )
 })
