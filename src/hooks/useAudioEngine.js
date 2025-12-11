@@ -90,7 +90,7 @@ export function useAudioEngine(instruments) {
 
             audioBuffersRef.current[instrument.id] = await ctx.decodeAudioData(arrayBuffer)
           } catch (error) {
-            // Swallow load errors
+            console.error(`Failed to load audio sample for ${instrument.id}:`, error)
           }
         }
 
@@ -107,6 +107,7 @@ export function useAudioEngine(instruments) {
     initAudio()
 
     return () => {
+      initCountRef.current++
       if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
         audioContextRef.current.close()
       }
@@ -155,6 +156,30 @@ export function useAudioEngine(instruments) {
     const nodes = effectNodesRef.current[instrumentId]
     if (nodes && audioContextRef.current) {
       nodes.mainGain.gain.setValueAtTime(volume, audioContextRef.current.currentTime)
+    }
+  }, [])
+
+  // Set effect parameters in real-time for a specific track
+  const setEffect = useCallback((instrumentId, effectType, value) => {
+    const nodes = effectNodesRef.current[instrumentId]
+    if (!nodes || !audioContextRef.current) return
+
+    const currentTime = audioContextRef.current.currentTime
+
+    switch (effectType) {
+      case 'volume':
+        nodes.mainGain.gain.setValueAtTime(value, currentTime)
+        break
+      case 'reverb':
+        nodes.reverbGain.gain.setValueAtTime(value, currentTime)
+        break
+      case 'filter': {
+        const minFreq = 200
+        const maxFreq = 20000
+        const cutoff = minFreq * Math.pow(maxFreq / minFreq, value)
+        nodes.lowpassFilter.frequency.setValueAtTime(cutoff, currentTime)
+        break
+      }
     }
   }, [])
 
@@ -213,6 +238,7 @@ export function useAudioEngine(instruments) {
 
       return true
     } catch (error) {
+      console.error(`Failed to load instrument ${instrument.id}:`, error)
       return false
     }
   }, [])
@@ -221,6 +247,7 @@ export function useAudioEngine(instruments) {
     isLoading,
     playSound,
     setTrackVolume,
+    setEffect,
     resumeContext,
     getCurrentTime,
     loadInstrument,

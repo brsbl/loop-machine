@@ -10,18 +10,22 @@ const Track = memo(function Track({
   onToggle,
   trackSettings,
   onTrackSettingsChange,
+  onEffectChange,
 }) {
   const handleVolumeChange = useCallback((volume) => {
     onTrackSettingsChange(instrument.id, { volume })
-  }, [instrument.id, onTrackSettingsChange])
+    onEffectChange?.(instrument.id, 'volume', volume)
+  }, [instrument.id, onTrackSettingsChange, onEffectChange])
 
   const handleReverbChange = useCallback((reverb) => {
     onTrackSettingsChange(instrument.id, { reverb })
-  }, [instrument.id, onTrackSettingsChange])
+    onEffectChange?.(instrument.id, 'reverb', reverb)
+  }, [instrument.id, onTrackSettingsChange, onEffectChange])
 
   const handleFilterChange = useCallback((filter) => {
     onTrackSettingsChange(instrument.id, { filter })
-  }, [instrument.id, onTrackSettingsChange])
+    onEffectChange?.(instrument.id, 'filter', filter)
+  }, [instrument.id, onTrackSettingsChange, onEffectChange])
 
   // Group pads into groups of 4
   const padGroups = []

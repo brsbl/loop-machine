@@ -45,7 +45,7 @@ const Knob = memo(function Knob({
       if (!dragStartRef.current) return
 
       const deltaY = dragStartRef.current.y - e.clientY
-      const sensitivity = range / 50 // 50px drag = full range
+      const sensitivity = range / 150 // 150px drag = full range
       const newValue = Math.min(max, Math.max(min,
         dragStartRef.current.value + deltaY * sensitivity
       ))

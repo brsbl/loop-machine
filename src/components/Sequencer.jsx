@@ -9,6 +9,7 @@ function Sequencer({
   onToggle,
   trackSettings,
   onTrackSettingsChange,
+  onEffectChange,
   bpm,
   isPlaying,
   isLoading,
@@ -40,6 +41,7 @@ function Sequencer({
             onToggle={onToggle}
             trackSettings={trackSettings[instrument.id]}
             onTrackSettingsChange={onTrackSettingsChange}
+            onEffectChange={onEffectChange}
           />
         ))}
       </div>
