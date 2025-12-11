@@ -1,3 +1,4 @@
+import { describe, it, expect } from 'vitest'
 import {
   DEFAULT_INSTRUMENTS,
   DEFAULT_TRACK_SETTINGS,

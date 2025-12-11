@@ -36,11 +36,12 @@ function hexToFloat(hex, defaultValue = 0.8) {
 
 /**
  * Encode current state to URL
- * Format: notes_settings
+ * Format: notes_settings_bpm
  * - notes: 4 hex chars per instrument (16 steps)
- * - settings: 6 hex chars per instrument (volume 2, attack 2, decay 2)
+ * - settings: 6 hex chars per instrument (volume 2, reverb 2, filter 2)
+ * - bpm: 3 digit number
  */
-export function encodeStateToUrl(pattern, trackSettings, instruments) {
+export function encodeStateToUrl(pattern, trackSettings, instruments, bpm = 120) {
   let notesHex = ''
   let settingsHex = ''
 
@@ -54,7 +55,9 @@ export function encodeStateToUrl(pattern, trackSettings, instruments) {
     settingsHex += floatToHex(settings.filter ?? 1)
   })
 
-  const compactState = `${notesHex}_${settingsHex}`
+  // BPM as 3-digit string (zero-padded)
+  const bpmStr = String(bpm).padStart(3, '0')
+  const compactState = `${notesHex}_${settingsHex}_${bpmStr}`
   const newUrl = window.location.pathname + '?s=' + compactState
   window.history.replaceState(null, '', newUrl)
 }
@@ -68,15 +71,19 @@ export function decodeStateFromUrl(instruments, steps) {
   const result = {
     pattern: null,
     trackSettings: null,
+    bpm: null,
   }
 
   const compactState = params.get('s')
-  // Expected: 4 hex per instrument for notes + _ + 6 hex per instrument for settings
-  const expectedLength = instruments.length * 4 + 1 + instruments.length * 6
 
-  if (compactState && compactState.length === expectedLength && compactState.includes('_')) {
+  // Support both old format (notes_settings) and new format (notes_settings_bpm)
+  if (compactState && compactState.includes('_')) {
     try {
-      const [notesPart, settingsPart] = compactState.split('_')
+      const parts = compactState.split('_')
+      const notesPart = parts[0]
+      const settingsPart = parts[1]
+      const bpmPart = parts[2] // may be undefined for old URLs
+
       const pattern = {}
       const trackSettings = {}
       let noteOffset = 0
@@ -104,6 +111,14 @@ export function decodeStateFromUrl(instruments, steps) {
 
       result.pattern = pattern
       result.trackSettings = trackSettings
+
+      // Parse BPM if present
+      if (bpmPart && bpmPart.length === 3) {
+        const parsedBpm = parseInt(bpmPart, 10)
+        if (parsedBpm >= 60 && parsedBpm <= 200) {
+          result.bpm = parsedBpm
+        }
+      }
     } catch (error) {
       console.error('Error parsing URL state:', error)
     }

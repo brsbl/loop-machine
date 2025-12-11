@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import Pad from '../components/Pad'
 
@@ -6,11 +7,11 @@ describe('Pad', () => {
     active: false,
     playing: false,
     isBeatStart: false,
-    onClick: jest.fn(),
+    onClick: vi.fn(),
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    vi.clearAllMocks()
   })
 
   it('renders a button', () => {
