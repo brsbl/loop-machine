@@ -1,0 +1,16 @@
+{
+  "event": "COMMENT",
+  "commit_id": "8a169f4c87e69497ee7a22f48f56784221db88e3",
+  "comments": [
+    {
+      "path": "src/utils/urlState.js",
+      "line": 30,
+      "body": "[P1] **Unsafe Hex Parsing and Incorrect Defaults**\n\nThe `hexToFloat` function is unsafe and uses inappropriate defaults:\n\n1.  **Crash Risk:** `parseInt` returns `NaN` for invalid hex strings (e.g. from a malformed URL). `NaN` propagates to `useAudioEngine` and causes `AudioParam.setValueAtTime(NaN)` to throw a `TypeError`, crashing the app.\n2.  **Incorrect Logic:** It hardcodes a return value of `0.8` on error. This is incorrect for parameters like `reverb` (default 0) and `filter` (default 1), setting them to arbitrary values when parsing fails.\n\nRecommended fix:\n```suggestion\nfunction hexToFloat(hex, defaultValue = 0.8) {\n  if (!hex || hex.length !== 2) return defaultValue\n  const int = parseInt(hex, 16)\n  return isNaN(int) ? defaultValue : int / 255\n}\n```\n(And update call sites to pass appropriate defaults)."
+    },
+    {
+      "path": "src/components/ui/Knob.jsx",
+      "line": 85,
+      "body": "[P2] **Accessibility Violation: Missing Keyboard Support**\n\nThe `Knob` component uses `role=\"slider\"` and `tabIndex={0}` but lacks a keyboard event handler (`onKeyDown`). This violates WAI-ARIA standards, making the control inaccessible to keyboard-only users who cannot adjust the value using Arrow keys."
+    }
+  ]
+}
