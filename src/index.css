@@ -158,8 +158,8 @@ body {
   flex-direction: column;
   gap: 10px;
   padding: 12px 16px;
-  /* top padding: match drums container border (1px) + padding (12px) + step numbers height (20px) + gap (10px) */
-  padding-top: 43px;
+  /* top padding: match drums container border (1px) + padding (12px) + step numbers height (20px) + gap (10px) - label row */
+  padding-top: 23px;
   background: linear-gradient(180deg, #d8d4cc 0%, #c8c4bc 100%);
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.15);
@@ -167,6 +167,19 @@ body {
   align-self: flex-start;
   width: 156px; /* align right edge with transport and visualizer */
   box-sizing: border-box;
+}
+
+/* Knob labels row - single row above all track knobs */
+.knob-labels-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 100%;
 }
 
 /* Step numbers row */

@@ -1,6 +1,67 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 
 /**
+ * Creates an algorithmic reverb using Schroeder design
+ * Uses 4 parallel comb filters + 2 series allpass filters
+ * @param {AudioContext} ctx - Web Audio context
+ * @returns {Object} Reverb nodes with control methods
+ */
+function createAlgorithmicReverb(ctx) {
+  const input = ctx.createGain()
+  const output = ctx.createGain()
+  const wetGain = ctx.createGain()
+  wetGain.gain.value = 0
+
+  // Comb filter delay times (prime-number-based for natural sound)
+  const combTimes = [0.0297, 0.0371, 0.0411, 0.0437]
+  const combFilters = combTimes.map((time, i) => {
+    const delay = ctx.createDelay(0.1)
+    const feedback = ctx.createGain()
+    delay.delayTime.value = time
+    feedback.gain.value = 0.7
+    // Feedback loop
+    delay.connect(feedback)
+    feedback.connect(delay)
+    return { delay, feedback }
+  })
+
+  // Sum comb filter outputs
+  const combSum = ctx.createGain()
+  combSum.gain.value = 0.25
+
+  // Connect combs in parallel from input
+  combFilters.forEach(comb => {
+    input.connect(comb.delay)
+    comb.delay.connect(combSum)
+  })
+
+  // Allpass filters for diffusion
+  const allpass1Delay = ctx.createDelay(0.01)
+  const allpass1Gain = ctx.createGain()
+  const allpass2Delay = ctx.createDelay(0.01)
+  const allpass2Gain = ctx.createGain()
+
+  allpass1Delay.delayTime.value = 0.005
+  allpass1Gain.gain.value = 0.7
+  allpass2Delay.delayTime.value = 0.0017
+  allpass2Gain.gain.value = 0.7
+
+  // Simple allpass approximation: comb sum -> delays -> wet
+  combSum.connect(allpass1Delay)
+  allpass1Delay.connect(allpass1Gain)
+  allpass1Gain.connect(allpass2Delay)
+  allpass2Delay.connect(allpass2Gain)
+  allpass2Gain.connect(wetGain)
+
+  // Dry path (input passes through)
+  input.connect(output)
+  // Wet path
+  wetGain.connect(output)
+
+  return { input, output, wetGain, combFilters }
+}
+
+/**
  * Custom hook for managing Web Audio API
  * Handles loading sounds, playback, and per-track volume/effects
  */
@@ -44,45 +105,55 @@ export function useAudioEngine(instruments) {
         // Create effect nodes for each instrument
         instruments.forEach(instrument => {
           const mainGain = ctx.createGain()
-          const lowpassFilter = ctx.createBiquadFilter()
-          const reverbGain = ctx.createGain()
+          const reverb = createAlgorithmicReverb(ctx)
           const delayNode = ctx.createDelay(1.0)
           const delayFeedback = ctx.createGain()
           const delayWetGain = ctx.createGain()
+          // Tempo-synced delay nodes
+          const tempoDelayNode = ctx.createDelay(2.0)
+          const tempoDelayFeedback = ctx.createGain()
+          const tempoDelayWetGain = ctx.createGain()
           const outputGain = ctx.createGain()
 
           // Initial settings
-          lowpassFilter.type = 'lowpass'
-          lowpassFilter.frequency.value = 20000  // Start fully open
-          lowpassFilter.Q.value = 1
           delayNode.delayTime.value = 0
           delayFeedback.gain.value = 0
           delayWetGain.gain.value = 0
-          reverbGain.gain.value = 0
+          tempoDelayNode.delayTime.value = 0
+          tempoDelayFeedback.gain.value = 0.35
+          tempoDelayWetGain.gain.value = 0
 
           // Signal routing:
-          // mainGain -> lowpassFilter -> outputGain (dry)
-          // mainGain -> reverbGain -> outputGain
+          // mainGain -> outputGain (dry)
+          // mainGain -> reverb.input -> reverb.output -> outputGain
           // mainGain -> delayNode -> delayFeedback -> delayNode (feedback loop)
           //                       -> delayWetGain -> outputGain
-          mainGain.connect(lowpassFilter)
-          lowpassFilter.connect(outputGain) // Dry signal with filter
-          mainGain.connect(reverbGain)
-          reverbGain.connect(outputGain)
+          // mainGain -> tempoDelayNode -> tempoDelayFeedback -> tempoDelayNode (feedback)
+          //                            -> tempoDelayWetGain -> outputGain
+          mainGain.connect(outputGain) // Dry signal
+          mainGain.connect(reverb.input)
+          reverb.output.connect(outputGain)
           mainGain.connect(delayNode)
           delayNode.connect(delayFeedback)
           delayFeedback.connect(delayNode)
           delayNode.connect(delayWetGain)
           delayWetGain.connect(outputGain)
+          mainGain.connect(tempoDelayNode)
+          tempoDelayNode.connect(tempoDelayFeedback)
+          tempoDelayFeedback.connect(tempoDelayNode)
+          tempoDelayNode.connect(tempoDelayWetGain)
+          tempoDelayWetGain.connect(outputGain)
           outputGain.connect(masterGain) // Route through master for visualization
 
           effectNodesRef.current[instrument.id] = {
             mainGain,
-            lowpassFilter,
-            reverbGain,
+            reverb,
             delayNode,
             delayFeedback,
             delayWetGain,
+            tempoDelayNode,
+            tempoDelayFeedback,
+            tempoDelayWetGain,
             outputGain,
           }
         })
@@ -159,32 +230,59 @@ export function useAudioEngine(instruments) {
   }, [])
 
   // Set effect parameters for a track
-  const setEffect = useCallback((instrumentId, effectType, value) => {
+  const setEffect = useCallback((instrumentId, effectType, value, bpm = 120) => {
     const nodes = effectNodesRef.current[instrumentId]
     if (!nodes || !audioContextRef.current) return
 
-    const sliderValue = parseFloat(value)
     const currentTime = audioContextRef.current.currentTime
 
     if (effectType === 'reverb') {
-      const reverbAmount = sliderValue
-      nodes.reverbGain.gain.setValueAtTime(reverbAmount, currentTime)
+      const amount = parseFloat(value)
+      // Control wet amount and feedback decay
+      nodes.reverb.wetGain.gain.setValueAtTime(amount * 0.6, currentTime)
+      nodes.reverb.combFilters.forEach(comb => {
+        comb.feedback.gain.setValueAtTime(0.5 + amount * 0.35, currentTime)
+      })
     }
 
     if (effectType === 'delay') {
-      const delayTime = sliderValue * 0.5
-      const feedbackAmount = sliderValue * 0.7
-      const wetAmount = sliderValue * 0.5
+      const sliderValue = parseInt(value, 10)
+      const delayTime = (sliderValue / 10) * 0.5
+      const feedbackAmount = (sliderValue / 10) * 0.7
+      const wetAmount = (sliderValue / 10) * 0.5
       nodes.delayNode.delayTime.setValueAtTime(delayTime, currentTime)
       nodes.delayFeedback.gain.setValueAtTime(feedbackAmount, currentTime)
       nodes.delayWetGain.gain.setValueAtTime(wetAmount, currentTime)
     }
 
     if (effectType === 'filter') {
-      const minFreq = 200
-      const maxFreq = 20000
-      const cutoff = minFreq * Math.pow(maxFreq / minFreq, sliderValue)
-      nodes.lowpassFilter.frequency.setValueAtTime(cutoff, currentTime)
+      // Tempo-synced delay: knob position determines note division and wet amount
+      const knobValue = parseFloat(value)
+      const sixteenthNote = 60 / bpm / 4
+
+      let delayTime, wetAmount
+
+      if (knobValue < 0.33) {
+        // 1/16 note
+        delayTime = sixteenthNote
+        wetAmount = knobValue * 3 * 0.5
+      } else if (knobValue < 0.66) {
+        // 1/8 note
+        delayTime = sixteenthNote * 2
+        wetAmount = (knobValue - 0.33) * 3 * 0.5 + 0.15
+      } else {
+        // 1/4 note
+        delayTime = sixteenthNote * 4
+        wetAmount = (knobValue - 0.66) * 3 * 0.5 + 0.3
+      }
+
+      // Turn off if knob at 0
+      if (knobValue === 0) {
+        wetAmount = 0
+      }
+
+      nodes.tempoDelayNode.delayTime.setValueAtTime(delayTime, currentTime)
+      nodes.tempoDelayWetGain.gain.setValueAtTime(wetAmount, currentTime)
     }
   }, [])
 
@@ -208,34 +306,47 @@ export function useAudioEngine(instruments) {
     try {
       // Create effect nodes
       const mainGain = ctx.createGain()
-      const lowpassFilter = ctx.createBiquadFilter()
-      const reverbGain = ctx.createGain()
+      const reverb = createAlgorithmicReverb(ctx)
       const delayNode = ctx.createDelay(1.0)
       const delayFeedback = ctx.createGain()
       const delayWetGain = ctx.createGain()
+      const tempoDelayNode = ctx.createDelay(2.0)
+      const tempoDelayFeedback = ctx.createGain()
+      const tempoDelayWetGain = ctx.createGain()
       const outputGain = ctx.createGain()
 
-      lowpassFilter.type = 'lowpass'
-      lowpassFilter.frequency.value = 20000  // Start fully open
-      lowpassFilter.Q.value = 1
       delayNode.delayTime.value = 0
       delayFeedback.gain.value = 0
       delayWetGain.gain.value = 0
-      reverbGain.gain.value = 0
+      tempoDelayNode.delayTime.value = 0
+      tempoDelayFeedback.gain.value = 0.35
+      tempoDelayWetGain.gain.value = 0
 
-      mainGain.connect(lowpassFilter)
-      lowpassFilter.connect(outputGain)
-      mainGain.connect(reverbGain)
-      reverbGain.connect(outputGain)
+      mainGain.connect(outputGain)
+      mainGain.connect(reverb.input)
+      reverb.output.connect(outputGain)
       mainGain.connect(delayNode)
       delayNode.connect(delayFeedback)
       delayFeedback.connect(delayNode)
       delayNode.connect(delayWetGain)
       delayWetGain.connect(outputGain)
+      mainGain.connect(tempoDelayNode)
+      tempoDelayNode.connect(tempoDelayFeedback)
+      tempoDelayFeedback.connect(tempoDelayNode)
+      tempoDelayNode.connect(tempoDelayWetGain)
+      tempoDelayWetGain.connect(outputGain)
       outputGain.connect(masterGainRef.current || ctx.destination)
 
       effectNodesRef.current[instrument.id] = {
-        mainGain, lowpassFilter, reverbGain, delayNode, delayFeedback, delayWetGain, outputGain,
+        mainGain,
+        reverb,
+        delayNode,
+        delayFeedback,
+        delayWetGain,
+        tempoDelayNode,
+        tempoDelayFeedback,
+        tempoDelayWetGain,
+        outputGain,
       }
 
       // Load sample

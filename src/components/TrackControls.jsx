@@ -17,7 +17,6 @@ const TrackControls = memo(function TrackControls({
         min={0}
         max={1}
         step={0.01}
-        label="VOL"
         size={40}
       />
       <Knob
@@ -26,7 +25,6 @@ const TrackControls = memo(function TrackControls({
         min={0}
         max={1}
         step={0.01}
-        label="REV"
         size={40}
       />
       <Knob
@@ -35,7 +33,6 @@ const TrackControls = memo(function TrackControls({
         min={0}
         max={1}
         step={0.01}
-        label="FLT"
         size={40}
       />
     </div>

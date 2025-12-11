@@ -43,7 +43,7 @@ function Sequencer({
 
   const handleFilterChange = (instrumentId, filter) => {
     onTrackSettingsChange(instrumentId, { filter })
-    onEffectChange?.(instrumentId, 'filter', filter)
+    onEffectChange?.(instrumentId, 'filter', filter, bpm)
   }
 
   return (
@@ -81,6 +81,12 @@ function Sequencer({
 
         {/* Track controls (knobs) */}
         <div className="track-controls-column">
+          {/* Label row - appears once above all track knobs */}
+          <div className="knob-labels-row">
+            <span>VOL</span>
+            <span>REV</span>
+            <span>DLY</span>
+          </div>
           {instruments.map(instrument => (
             <TrackControls
               key={instrument.id}
