@@ -1,3 +1,4 @@
+/* global ResizeObserver */
 import { useRef, useEffect, memo } from 'react'
 
 const AudioVisualizer = memo(function AudioVisualizer({ analyser, barCount = 16 }) {

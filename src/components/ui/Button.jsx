@@ -1,33 +1,10 @@
 import { memo } from 'react'
 
-/**
- * Reusable button component with variants
- */
-const Button = memo(function Button({
-  children,
-  onClick,
-  disabled = false,
-  active = false,
-  variant = 'default',
-  className = '',
-}) {
-  const variantClasses = variant.split(' ').map(v => `btn-${v}`)
-  const classes = [
-    'btn',
-    ...variantClasses,
-    active ? 'active' : '',
-    className,
-  ].filter(Boolean).join(' ')
+function Button({ variant = '', active = false, disabled = false, onClick, children }) {
+  const classes = ['btn']
+  if (variant) classes.push(...variant.split(' ').map(v => 'btn-' + v))
+  if (active) classes.push('active')
+  return <button className={classes.join(' ')} onClick={onClick} disabled={disabled}>{children}</button>
+}
 
-  return (
-    <button
-      className={classes}
-      onClick={onClick}
-      disabled={disabled}
-    >
-      {children}
-    </button>
-  )
-})
-
-export default Button
+export default memo(Button)
