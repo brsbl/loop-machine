@@ -100,6 +100,23 @@ body {
   color: #1a1a1a;
   letter-spacing: 2px;
   font-weight: bold;
+  background: transparent;
+  border: none;
+  width: 3.5ch;
+  text-align: center;
+  outline: none;
+  -moz-appearance: textfield;
+}
+
+#tempo-value::-webkit-outer-spin-button,
+#tempo-value::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+#tempo-value:focus {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 2px;
 }
 
 /* --- SEQUENCER SECTION --- */

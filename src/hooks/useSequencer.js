@@ -6,8 +6,7 @@ import { decodeStateFromUrl, encodeStateToUrl } from '../utils/urlState'
  * Custom hook for managing sequencer state and playback timing
  */
 export function useSequencer(instruments, audioEngine) {
-  const { steps, bpm, scheduleAheadTime, schedulerInterval } = SEQUENCER_CONFIG
-  const stepTime = 60 / bpm / 4 // Time per 16th note
+  const { steps, bpm: defaultBpm, scheduleAheadTime, schedulerInterval } = SEQUENCER_CONFIG
 
   // Initialize state from URL if available
   const [pattern, setPattern] = useState(() => {
@@ -18,8 +17,15 @@ export function useSequencer(instruments, audioEngine) {
     const urlState = decodeStateFromUrl(instruments, steps)
     return urlState.trackSettings || createInitialTrackSettings(instruments)
   })
+  const [bpm, setBpmState] = useState(() => {
+    const urlState = decodeStateFromUrl(instruments, steps)
+    return urlState.bpm || defaultBpm
+  })
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentStep, setCurrentStep] = useState(-1)
+
+  // Compute stepTime dynamically from bpm
+  const stepTime = 60 / bpm / 4 // Time per 16th note
 
   // Refs for playback timing (don't trigger re-renders)
   const nextNoteTimeRef = useRef(0)
@@ -30,6 +36,8 @@ export function useSequencer(instruments, audioEngine) {
   const isPlayingRef = useRef(false)
   const patternRef = useRef(pattern)
   const trackSettingsRef = useRef(trackSettings)
+  const bpmRef = useRef(bpm)
+  const stepTimeRef = useRef(stepTime)
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -43,6 +51,11 @@ export function useSequencer(instruments, audioEngine) {
   useEffect(() => {
     trackSettingsRef.current = trackSettings
   }, [trackSettings])
+
+  useEffect(() => {
+    bpmRef.current = bpm
+    stepTimeRef.current = 60 / bpm / 4
+  }, [bpm])
 
   // Check if any track is soloed
   const hasSoloedTrack = useCallback(() => {
@@ -75,25 +88,26 @@ export function useSequencer(instruments, audioEngine) {
         }
       })
 
-      nextNoteTimeRef.current += stepTime
+      nextNoteTimeRef.current += stepTimeRef.current
       currentStepRef.current = (currentStepRef.current + 1) % steps
     }
 
     timerIdRef.current = setTimeout(scheduler, schedulerInterval)
-  }, [instruments, audioEngine, steps, stepTime, scheduleAheadTime, schedulerInterval, shouldTrackPlay])
+  }, [instruments, audioEngine, steps, scheduleAheadTime, schedulerInterval, shouldTrackPlay])
 
   // Visual update loop - syncs UI with audio
   const updateVisuals = useCallback(() => {
     if (!isPlayingRef.current) return
 
     const currentTime = audioEngine.getCurrentTime()
-    const loopDuration = steps * stepTime
+    const currentStepTime = stepTimeRef.current
+    const loopDuration = steps * currentStepTime
     const timeWithinLoop = (currentTime - startTimeRef.current) % loopDuration
-    const visualStep = Math.floor(timeWithinLoop / stepTime)
+    const visualStep = Math.floor(timeWithinLoop / currentStepTime)
 
     setCurrentStep(visualStep)
     animationFrameRef.current = requestAnimationFrame(updateVisuals)
-  }, [audioEngine, steps, stepTime])
+  }, [audioEngine, steps])
 
   // Start playback
   const startPlayback = useCallback(async () => {
@@ -166,10 +180,16 @@ export function useSequencer(instruments, audioEngine) {
     }))
   }, [steps])
 
-  // Persist state to URL when pattern or trackSettings changes
+  // Update BPM with clamping
+  const setBpm = useCallback((newBpm) => {
+    const clampedBpm = Math.max(60, Math.min(200, Number(newBpm) || 120))
+    setBpmState(clampedBpm)
+  }, [])
+
+  // Persist state to URL when pattern, trackSettings, or bpm changes
   useEffect(() => {
-    encodeStateToUrl(pattern, trackSettings, instruments)
-  }, [pattern, trackSettings, instruments])
+    encodeStateToUrl(pattern, trackSettings, instruments, bpm)
+  }, [pattern, trackSettings, instruments, bpm])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -186,6 +206,7 @@ export function useSequencer(instruments, audioEngine) {
     currentStep,
     steps,
     bpm,
+    setBpm,
     toggleStep,
     startPlayback,
     stopPlayback,

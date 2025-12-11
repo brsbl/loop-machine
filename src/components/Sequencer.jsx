@@ -11,6 +11,7 @@ function Sequencer({
   onTrackSettingsChange,
   onEffectChange,
   bpm,
+  onBpmChange,
   isPlaying,
   isLoading,
   onPlayStop,
@@ -60,6 +61,7 @@ function Sequencer({
         <div className="transport-section">
           <TransportControls
             bpm={bpm}
+            onBpmChange={onBpmChange}
             isPlaying={isPlaying}
             isLoading={isLoading}
             onPlayStop={onPlayStop}

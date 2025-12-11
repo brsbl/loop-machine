@@ -34,7 +34,7 @@ function charToValue(char) {
 /**
  * Encode current state to URL
  */
-export function encodeStateToUrl(pattern, trackSettings, instruments) {
+export function encodeStateToUrl(pattern, trackSettings, instruments, bpm = 120) {
   let notesHex = ''
   let effectsChars = ''
 
@@ -47,7 +47,9 @@ export function encodeStateToUrl(pattern, trackSettings, instruments) {
     effectsChars += valueToChar(settings.delay || 0)
   })
 
-  const compactState = `${notesHex}_${effectsChars}`
+  // BPM as 3-digit string (zero-padded)
+  const bpmStr = String(bpm).padStart(3, '0')
+  const compactState = `${notesHex}_${effectsChars}_${bpmStr}`
   const newUrl = window.location.pathname + '?s=' + compactState
   window.history.replaceState(null, '', newUrl)
 }
@@ -61,14 +63,19 @@ export function decodeStateFromUrl(instruments, steps) {
   const result = {
     pattern: null,
     trackSettings: null,
+    bpm: null,
   }
 
   const compactState = params.get('s')
-  const expectedLength = instruments.length * 4 + 1 + instruments.length * 2 // 4 hex + _ + 2 chars per instrument
 
-  if (compactState && compactState.length === expectedLength && compactState.includes('_')) {
+  // Support both old format (notes_effects) and new format (notes_effects_bpm)
+  if (compactState && compactState.includes('_')) {
     try {
-      const [notesPart, effectsPart] = compactState.split('_')
+      const parts = compactState.split('_')
+      const notesPart = parts[0]
+      const effectsPart = parts[1]
+      const bpmPart = parts[2] // may be undefined for old URLs
+
       const pattern = {}
       const trackSettings = {}
       let noteOffset = 0
@@ -95,6 +102,14 @@ export function decodeStateFromUrl(instruments, steps) {
 
       result.pattern = pattern
       result.trackSettings = trackSettings
+
+      // Parse BPM if present
+      if (bpmPart && bpmPart.length === 3) {
+        const parsedBpm = parseInt(bpmPart, 10)
+        if (parsedBpm >= 60 && parsedBpm <= 200) {
+          result.bpm = parsedBpm
+        }
+      }
     } catch (error) {
       console.error('Error parsing URL state:', error)
     }
