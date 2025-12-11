@@ -31,11 +31,11 @@
   - Rate (1/4, 1/8, 1/16)
 
 ### P1 — Should Have
-- **Per-note pitch bend** — slide individual steps up/down
-- **Per-note filter** — hi-pass/lo-pass sweep per step
+- **Pitch bend** — slide synth pitch up/down
+- **Filter** — hi-pass/lo-pass sweep for synth
+- **Visual waveform** — real-time audio visualization
 
 ### P2 — Nice to Have
-- **Visual waveform** — real-time audio visualization
 - **More instruments** — bass, claps, toms from existing 808 samples
 - **Preset patterns** — built-in starter beats
 

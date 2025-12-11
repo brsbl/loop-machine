@@ -1,6 +1,5 @@
-import { memo, useCallback } from 'react'
+import { memo } from 'react'
 import Pad from './Pad'
-import TrackControls from './TrackControls'
 
 const Track = memo(function Track({
   instrument,
@@ -8,24 +7,8 @@ const Track = memo(function Track({
   pattern,
   currentStep,
   onToggle,
-  trackSettings,
-  onTrackSettingsChange,
-  onEffectChange,
+  showLabel = true,
 }) {
-  const handleVolumeChange = useCallback((volume) => {
-    onTrackSettingsChange(instrument.id, { volume })
-  }, [instrument.id, onTrackSettingsChange])
-
-  const handleReverbChange = useCallback((reverb) => {
-    onTrackSettingsChange(instrument.id, { reverb })
-    onEffectChange?.(instrument.id, 'reverb', reverb)
-  }, [instrument.id, onTrackSettingsChange, onEffectChange])
-
-  const handleDelayChange = useCallback((delay) => {
-    onTrackSettingsChange(instrument.id, { delay })
-    onEffectChange?.(instrument.id, 'delay', delay)
-  }, [instrument.id, onTrackSettingsChange, onEffectChange])
-
   // Group pads into groups of 4
   const padGroups = []
   for (let g = 0; g < steps; g += 4) {
@@ -35,8 +18,8 @@ const Track = memo(function Track({
   }
 
   return (
-    <div className="instrument-track-row">
-      <div className="instrument-label">{instrument.name}</div>
+    <div className="track-row">
+      <span className="track-label">{instrument.name}</span>
       <div className="notes-container">
         {padGroups.map((group, groupIndex) => (
           <div
@@ -55,14 +38,6 @@ const Track = memo(function Track({
           </div>
         ))}
       </div>
-      <TrackControls
-        volume={trackSettings.volume}
-        reverb={trackSettings.reverb ?? 0}
-        delay={trackSettings.delay ?? 0}
-        onVolumeChange={handleVolumeChange}
-        onReverbChange={handleReverbChange}
-        onDelayChange={handleDelayChange}
-      />
     </div>
   )
 })

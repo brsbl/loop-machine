@@ -5,7 +5,7 @@ import { decodeStateFromUrl, encodeStateToUrl } from '../utils/urlState'
 /**
  * Custom hook for managing sequencer state and playback timing
  */
-export function useSequencer(instruments, audioEngine) {
+export function useSequencer(instruments, audioEngine, arpeggiator = null) {
   const { steps, bpm: defaultBpm, scheduleAheadTime, schedulerInterval } = SEQUENCER_CONFIG
 
   // Initialize state from URL if available
@@ -38,6 +38,7 @@ export function useSequencer(instruments, audioEngine) {
   const trackSettingsRef = useRef(trackSettings)
   const bpmRef = useRef(bpm)
   const stepTimeRef = useRef(stepTime)
+  const arpeggiatorRef = useRef(arpeggiator)
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -56,6 +57,10 @@ export function useSequencer(instruments, audioEngine) {
     bpmRef.current = bpm
     stepTimeRef.current = 60 / bpm / 4
   }, [bpm])
+
+  useEffect(() => {
+    arpeggiatorRef.current = arpeggiator
+  }, [arpeggiator])
 
   // Check if any track is soloed
   const hasSoloedTrack = useCallback(() => {
@@ -81,12 +86,18 @@ export function useSequencer(instruments, audioEngine) {
     while (nextNoteTimeRef.current < currentTime + scheduleAheadTime) {
       const step = currentStepRef.current
 
+      // Schedule drum sounds
       instruments.forEach(instrument => {
         if (patternRef.current[instrument.id][step] && shouldTrackPlay(instrument.id)) {
           const settings = trackSettingsRef.current[instrument.id]
           audioEngine.playSound(instrument.id, nextNoteTimeRef.current, settings)
         }
       })
+
+      // Schedule arpeggiator notes
+      if (arpeggiatorRef.current) {
+        arpeggiatorRef.current.scheduleArpNote(step, nextNoteTimeRef.current, stepTimeRef.current)
+      }
 
       nextNoteTimeRef.current += stepTimeRef.current
       currentStepRef.current = (currentStepRef.current + 1) % steps
@@ -139,6 +150,11 @@ export function useSequencer(instruments, audioEngine) {
       cancelAnimationFrame(animationFrameRef.current)
       animationFrameRef.current = null
     }
+
+    // Stop arpeggiator
+    if (arpeggiatorRef.current) {
+      arpeggiatorRef.current.stopArp()
+    }
   }, [])
 
   // Toggle a step in the pattern
@@ -155,6 +171,10 @@ export function useSequencer(instruments, audioEngine) {
   const resetPattern = useCallback(() => {
     stopPlayback()
     setPattern(createInitialPattern(instruments, steps))
+    // Also reset arpeggiator pattern
+    if (arpeggiatorRef.current) {
+      arpeggiatorRef.current.resetPattern()
+    }
   }, [stopPlayback, instruments, steps])
 
   // Update track settings (volume, mute, solo)

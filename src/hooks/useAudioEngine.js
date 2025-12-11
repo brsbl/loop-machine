@@ -6,9 +6,12 @@ import { useState, useRef, useCallback, useEffect } from 'react'
  */
 export function useAudioEngine(instruments) {
   const [isLoading, setIsLoading] = useState(true)
+  const [analyser, setAnalyser] = useState(null)
   const audioContextRef = useRef(null)
   const audioBuffersRef = useRef({})
   const effectNodesRef = useRef({})
+  const masterGainRef = useRef(null)
+  const analyserRef = useRef(null)
   const initCountRef = useRef(0)
 
   // Initialize audio context and load all instrument samples
@@ -24,6 +27,19 @@ export function useAudioEngine(instruments) {
 
         const ctx = new (window.AudioContext || window.webkitAudioContext)()
         audioContextRef.current = ctx
+
+        // Create master gain and analyser for visualization
+        const masterGain = ctx.createGain()
+        const analyserNode = ctx.createAnalyser()
+        analyserNode.fftSize = 256
+        analyserNode.smoothingTimeConstant = 0.8
+
+        masterGain.connect(analyserNode)
+        analyserNode.connect(ctx.destination)
+
+        masterGainRef.current = masterGain
+        analyserRef.current = analyserNode
+        setAnalyser(analyserNode)
 
         // Create effect nodes for each instrument
         instruments.forEach(instrument => {
@@ -53,7 +69,7 @@ export function useAudioEngine(instruments) {
           delayFeedback.connect(delayNode)
           delayNode.connect(delayWetGain)
           delayWetGain.connect(outputGain)
-          outputGain.connect(ctx.destination)
+          outputGain.connect(masterGain) // Route through master for visualization
 
           effectNodesRef.current[instrument.id] = {
             mainGain,
@@ -198,7 +214,7 @@ export function useAudioEngine(instruments) {
       delayFeedback.connect(delayNode)
       delayNode.connect(delayWetGain)
       delayWetGain.connect(outputGain)
-      outputGain.connect(ctx.destination)
+      outputGain.connect(masterGainRef.current || ctx.destination)
 
       effectNodesRef.current[instrument.id] = {
         mainGain, reverbGain, delayNode, delayFeedback, delayWetGain, outputGain,
@@ -217,6 +233,7 @@ export function useAudioEngine(instruments) {
 
   return {
     isLoading,
+    analyser,
     playSound,
     setTrackVolume,
     setEffect,

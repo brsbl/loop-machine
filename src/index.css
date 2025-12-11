@@ -28,6 +28,8 @@ body {
 /* --- MAIN DRUM MACHINE CONTAINER --- */
 .container,
 .drum-machine {
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(145deg, #e8e4dc 0%, #d4d0c8 50%, #c8c4bc 100%);
   border-radius: 18px;
   padding: 38px 45px 30px 45px;
@@ -37,7 +39,7 @@ body {
     inset 0 1px 0 rgba(255, 255, 255, 0.5),
     inset 0 -1px 0 rgba(0, 0, 0, 0.1);
   position: relative;
-  min-width: 1080px;
+  width: fit-content;
 }
 
 /* Subtle texture overlay */
@@ -57,6 +59,8 @@ body {
 
 /* --- HEADER SECTION --- */
 .header {
+  display: flex;
+  align-items: center;
   margin-bottom: 30px;
   padding: 0 8px;
 }
@@ -74,7 +78,9 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  flex: 1;
 }
 
 .tempo-label {
@@ -126,77 +132,133 @@ body {
   gap: 6px;
 }
 
-/* Step numbers rows */
-.step-numbers-top,
-.step-numbers-bottom {
+/* --- DRUMS SECTION --- */
+.drums-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.drums-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: linear-gradient(180deg, #d8d4cc 0%, #c8c4bc 100%);
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  width: fit-content;
+}
+
+.track-controls-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 16px;
+  /* top padding: match drums container border (1px) + padding (12px) + step numbers height (20px) + gap (10px) */
+  padding-top: 43px;
+  background: linear-gradient(180deg, #d8d4cc 0%, #c8c4bc 100%);
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+  align-self: flex-start;
+  width: 156px; /* align right edge with transport and visualizer */
+  box-sizing: border-box;
+}
+
+/* Step numbers row */
+.step-numbers-row {
   display: flex;
   align-items: center;
 }
 
-.instrument-label-spacer {
-  width: 105px;
+.instrument-label-spacer,
+.label-spacer {
+  width: 90px;
+  height: 20px; /* match step number height */
   flex-shrink: 0;
 }
+
 
 .controls-spacer {
   width: 240px;
   flex-shrink: 0;
 }
 
-.slider-labels {
-  display: flex;
-  gap: 9px;
-  margin-left: 15px;
-  align-items: center;
-}
-
-.slider-label {
-  font-size: 0.9em;
-  font-weight: 600;
-  color: #444;
-  text-align: center;
-  width: 90px;
-}
-
-.slider-label:nth-child(2),
-.slider-label:nth-child(3) {
-  width: 66px;
-}
-
 .step-numbers {
+  display: flex;
+  gap: 6px;
+  padding-left: 68px; /* align with pads: track-label width (60px) + gap (8px) */
+}
+
+/* Step number groups to match pad groups */
+.step-number-group {
   display: flex;
   gap: 6px;
 }
 
+.step-number-group.bordered {
+  padding: 3px;
+  margin: -3px;
+}
+
 .step-numbers span {
   width: 36px;
+  height: 20px;
   text-align: center;
   font-size: 1.05em;
   font-weight: 600;
   color: #444;
 }
 
-/* --- INSTRUMENT TRACKS --- */
-.instrument-tracks {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* --- ARPEGGIATOR TRACK --- */
+.arp-notes {
+  padding-left: 6px; /* align with drum pads */
 }
 
-.instrument-track-row {
-  display: flex;
-  align-items: center;
-  gap: 15px;
+/* Arp pads - different color scheme */
+.arp-notes .note-button.active {
+  background: linear-gradient(180deg, #27ae60 0%, #1e8449 100%);
+  box-shadow:
+    0 3px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    0 0 12px rgba(39, 174, 96, 0.4);
+}
+
+.arp-notes .note-button.active:hover {
+  background: linear-gradient(180deg, #2ecc71 0%, #27ae60 100%);
 }
 
 /* Instrument labels */
 .instrument-label {
   width: 90px;
+  height: 42px; /* match pad height */
+  display: flex;
+  align-items: center;
   font-size: 1.125em;
   font-weight: 700;
   color: #222;
   text-transform: uppercase;
   letter-spacing: 0.75px;
+}
+
+/* Track row with label */
+.track-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.track-label {
+  width: 60px;
+  font-size: 0.7em;
+  font-weight: 700;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 /* Notes container */
@@ -222,39 +284,124 @@ body {
 .track-controls {
   display: flex;
   align-items: center;
-  gap: 9px;
-  margin-left: 15px;
+  justify-content: center;
+  gap: 8px;
+  height: 42px; /* match instrument row height */
 }
 
-.volume-slider {
-  width: 90px;
-  height: 6px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: linear-gradient(90deg, #888 0%, #666 100%);
-  border-radius: 3px;
-  cursor: pointer;
+/* --- KNOB CONTROLS --- */
+.knob-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
 }
 
-.volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 18px;
-  height: 18px;
+.knob {
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.knob:active {
+  cursor: grabbing;
+}
+
+.knob:focus {
+  outline: none;
+}
+
+.knob:focus-visible {
+  outline: 2px solid #f5a623;
+  outline-offset: 2px;
   border-radius: 50%;
-  background: linear-gradient(180deg, #f5a623 0%, #e08a00 100%);
-  border: 1px solid #c07000;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
 }
 
-.volume-slider::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #f5a623 0%, #e08a00 100%);
-  border: 1px solid #c07000;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+.knob-label {
+  position: absolute;
+  bottom: -14px;
+  font-size: 0.65em;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* --- FADER CONTROLS --- */
+.fader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fader-wrapper {
+  position: relative;
+  width: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Single horizontal tick lines above and below track */
+.fader-tick-line {
+  width: 100%;
+  height: 2px;
+  background: #998b7a;
+  border-radius: 1px;
+}
+
+/* Fader track - horizontal bar */
+.fader-track {
+  position: relative;
+  width: 100%;
+  height: 10px;
+  background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+  border-radius: 5px;
   cursor: pointer;
+  box-shadow:
+    inset 0 1px 3px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Fader thumb - the draggable handle */
+.fader-thumb {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 24px;
+  height: 24px;
+  cursor: grab;
+  z-index: 2;
+}
+
+.fader-thumb:active {
+  cursor: grabbing;
+}
+
+/* The round grip part of the thumb */
+.fader-thumb-grip {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 50%, #2a2a2a 100%);
+  border-radius: 50%;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Orange indicator stripe on the thumb */
+.fader-thumb-indicator {
+  width: 4px;
+  height: 14px;
+  background: linear-gradient(180deg, #f5a623 0%, #e08a00 100%);
+  border-radius: 2px;
+  box-shadow: 0 0 4px rgba(245, 166, 35, 0.4);
 }
 
 .track-button {
@@ -300,54 +447,6 @@ body {
   border-color: #b7950b;
   color: #fff;
   box-shadow: 0 0 9px rgba(243, 156, 18, 0.4);
-}
-
-/* --- EFFECT SLIDERS --- */
-.effect-sliders {
-  display: flex;
-  gap: 6px;
-  margin-left: 9px;
-}
-
-.effect-slider {
-  width: 60px;
-  height: 6px;
-  -webkit-appearance: none;
-  appearance: none;
-  background: linear-gradient(90deg, #666 0%, #888 100%);
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.effect-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #8e44ad 0%, #6c3483 100%);
-  border: 1px solid #4a235a;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-}
-
-.effect-slider::-moz-range-thumb {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  background: linear-gradient(180deg, #8e44ad 0%, #6c3483 100%);
-  border: 1px solid #4a235a;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-}
-
-.delay-slider::-webkit-slider-thumb {
-  background: linear-gradient(180deg, #3498db 0%, #2980b9 100%);
-  border: 1px solid #1a5276;
-}
-
-.delay-slider::-moz-range-thumb {
-  background: linear-gradient(180deg, #3498db 0%, #2980b9 100%);
-  border: 1px solid #1a5276;
 }
 
 /* --- NOTE BUTTONS (PADS) --- */
@@ -411,16 +510,88 @@ body {
   height: 24px;
 }
 
-/* --- BOTTOM ROW (Keyboard + Transport) --- */
-.bottom-row {
+/* --- SYNTH SECTION (vol + steps + keyboard + transport) --- */
+.synth-section {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  gap: 16px;
   margin-top: 24px;
-  gap: 15px;
 }
 
+.synth-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.synth-vol-container {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+.synth-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
+  border-radius: 8px;
+  padding: 12px;
+  width: fit-content;
+}
+
+/* Transport section */
 .transport-section {
-  margin-left: auto;
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  width: 156px; /* align right edge with knobs and visualizer */
+}
+
+/* Synth controls row (direction, speed, wave) */
+.synth-controls-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.synth-controls-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.synth-controls-container {
+  display: flex;
+  gap: 16px;
+}
+
+/* Visualizer container - takes remaining space */
+.visualizer-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+/* Right visualizer - match transport/knobs width */
+.visualizer-container:last-child {
+  flex: none;
+  width: 156px;
+}
+
+/* Audio visualizer canvas wrapper */
+.audio-visualizer {
+  width: 100%;
+  height: 60px;
+  background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+  border-radius: 6px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.audio-visualizer canvas {
+  width: 100%;
+  height: 100%;
 }
 
 .transport-controls {
@@ -435,103 +606,238 @@ body {
     0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.transport-top-row {
+.transport-buttons {
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.reset-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 6px;
 }
 
-.transport-label {
-  font-size: 0.9em;
-  font-weight: 600;
-  color: #d0d0d0;
-  letter-spacing: 1.5px;
-}
-
-#reset-button {
-  width: 70px;
-  height: 40px;
-  background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
-  border: 2px solid #1a1a1a;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.1s ease;
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-#reset-button:hover {
-  background: linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 100%);
-}
-
-#reset-button:active {
-  background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
-  box-shadow:
-    inset 0 3px 6px rgba(0, 0, 0, 0.4),
-    0 1px 2px rgba(0, 0, 0, 0.3);
-}
-
-#play-stop-button {
-  width: 100%;
-  padding: 14px 6px;
-  font-size: 1.1em;
+/* --- BUTTON BASE --- */
+.btn {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
-  border-radius: 6px;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.1s ease;
   background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
-  border: 2px solid #1a1a1a;
+  border: 1px solid #1a1a1a;
   color: #e0e0e0;
   box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-#play-stop-button:hover {
+.btn:hover {
   background: linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 100%);
 }
 
-#play-stop-button:active,
-#play-stop-button.playing {
+.btn:active,
+.btn.active {
   background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
   box-shadow:
-    inset 0 3px 6px rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(0, 0, 0, 0.4),
     0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-#play-stop-button:disabled {
+.btn:disabled {
   background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
   border-color: #1a1a1a;
   color: #555;
   cursor: not-allowed;
 }
 
-/* --- KEYBOARD CENTER --- */
-.keyboard-center {
+/* --- BUTTON VARIANTS --- */
+.btn-transport {
+  flex: 1;
+  padding: 8px 6px;
+  font-size: 0.85em;
+}
+
+.btn-reset {
+  background: linear-gradient(180deg, #fafafa 0%, #e0e0e0 100%);
+  border: 1px solid #bbb;
+  color: #333;
+}
+
+.btn-reset:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+}
+
+.btn-reset:active {
+  background: linear-gradient(180deg, #e0e0e0 0%, #d0d0d0 100%);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.btn-play {
+  background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
+  border: 1px solid #a93226;
+  color: #fff;
+  min-width: 52px;
+}
+
+.btn-play:hover {
+  background: linear-gradient(180deg, #ec7063 0%, #e74c3c 100%);
+}
+
+.btn-play:active,
+.btn-play.active {
+  background: linear-gradient(180deg, #c0392b 0%, #a93226 100%);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* --- KEYBOARD CONTROLS (dir, speed, vol, wave + keyboard) --- */
+.keyboard-controls {
   display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+/* Container for all synth controls */
+.synth-controls-container {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding: 10px;
+  background: linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 100%);
+  border-radius: 8px;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.3),
+    0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Stack for DIR over SPEED */
+.control-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Half-height control boxes (for stacked DIR/SPEED) */
+.control-box-half {
+  flex: 1;
+  justify-content: center;
+}
+
+/* --- CONTROL BOX (container for each control group) --- */
+.control-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: linear-gradient(180deg, #d8d4cc 0%, #c8c4bc 100%);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+/* Vertical control boxes (VOL, WAVE) */
+.control-box-vertical {
+  padding: 8px 8px;
+  justify-content: space-between;
+}
+
+.control-box-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: #555;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.control-box-buttons {
+  display: flex;
+  gap: 3px;
+}
+
+/* Vertical buttons layout */
+.control-box-buttons-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.control-btn {
+  width: 32px;
+  height: 26px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  background: linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 100%);
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.control-btn:hover {
+  background: linear-gradient(180deg, #6a6a6a 0%, #4a4a4a 100%);
+  color: #ccc;
+}
+
+.control-btn.active {
+  background: linear-gradient(180deg, #f5a623 0%, #e08a00 100%);
+  border-color: #f5a623;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(245, 166, 35, 0.4);
+}
+
+/* Wave buttons for icons */
+.control-btn.wave-btn {
+  width: 32px;
+  height: 26px;
+}
+
+/* Vertical volume slider */
+.control-box-slider-vertical {
+  display: flex;
+  align-items: center;
   justify-content: center;
   flex: 1;
+  width: 24px;
+}
+
+.vol-slider-vertical {
+  width: 100px;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%);
+  border-radius: 3px;
+  cursor: pointer;
+  transform: rotate(-90deg);
+  transform-origin: center center;
+}
+
+.vol-slider-vertical::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f5a623 0%, #e08a00 100%);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.vol-slider-vertical::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #f5a623 0%, #e08a00 100%);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 /* --- KEYBOARD SECTION --- */
 .keyboard-section {
-  padding: 10px 12px;
-  width: fit-content;
-  background: linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 100%);
-  border-radius: 6px;
-  box-shadow:
-    inset 0 2px 6px rgba(0, 0, 0, 0.3),
-    0 1px 0 rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 6px; /* align with drum pads */
 }
 
 .keyboard {
@@ -585,11 +891,77 @@ body {
   background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
 }
 
-.key.black:active {
+.key.black:active,
+.key.black.active,
+.key.black.held {
   background: linear-gradient(180deg, #2a2a2a 0%, #0a0a0a 100%);
   height: 87px;
   margin-top: 3px;
 }
+
+/* Held state for white keys (toggled on for arpeggiator) */
+.key.white.held {
+  background: linear-gradient(180deg, #f5a623 0%, #e08a00 100%);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.2),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.1),
+    0 0 12px rgba(245, 166, 35, 0.4);
+}
+
+/* Held state for black keys */
+.key.black.held {
+  background: linear-gradient(180deg, #f5a623 0%, #c07000 100%);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.4),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.2),
+    0 0 8px rgba(245, 166, 35, 0.5);
+  height: 90px;
+  margin-top: 0;
+}
+
+/* Playing state - currently playing arp note */
+.key.white.playing {
+  background: linear-gradient(180deg, #fff 0%, #f5a623 100%);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.2),
+    0 0 20px rgba(245, 166, 35, 0.6);
+}
+
+.key.black.playing {
+  background: linear-gradient(180deg, #f5a623 0%, #ff8c00 100%);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.4),
+    0 0 16px rgba(245, 166, 35, 0.7);
+}
+
+/* Key hints (QWERTY letters) */
+.key-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  opacity: 0.5;
+  pointer-events: none;
+  user-select: none;
+}
+
+.key.white .key-hint {
+  color: #666;
+}
+
+.key.black .key-hint {
+  color: #888;
+  bottom: 4px;
+}
+
+/* Position keys relatively for hint positioning */
+.key {
+  position: relative;
+}
+
 
 /* --- LOADING OVERLAY --- */
 .loading-overlay {
@@ -641,4 +1013,5 @@ body {
 .app-container {
   display: flex;
   justify-content: center;
+  width: fit-content;
 }

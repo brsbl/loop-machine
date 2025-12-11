@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import Button from './ui/Button'
 
 function TransportControls({ bpm, isPlaying, isLoading, onPlayStop, onReset, onBpmChange }) {
   const [inputValue, setInputValue] = useState(String(bpm))
@@ -30,36 +31,35 @@ function TransportControls({ bpm, isPlaying, isLoading, onPlayStop, onReset, onB
 
   return (
     <div className="transport-controls">
-      <div className="transport-top-row">
-        <div className="reset-section">
-          <span className="transport-label">RESET</span>
-          <button id="reset-button" onClick={onReset}></button>
-        </div>
-        <div className="tempo-section">
-          <span className="tempo-label">TEMPO</span>
-          <div className="tempo-display">
-            <input
-              type="number"
-              id="tempo-value"
-              value={inputValue}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              onKeyDown={handleKeyDown}
-              min={60}
-              max={200}
-              step={1}
-            />
-          </div>
+      <div className="tempo-section">
+        <span className="tempo-label">TEMPO</span>
+        <div className="tempo-display">
+          <input
+            type="number"
+            id="tempo-value"
+            value={inputValue}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            onKeyDown={handleKeyDown}
+            min={60}
+            max={200}
+            step={1}
+          />
         </div>
       </div>
-      <button
-        id="play-stop-button"
-        onClick={onPlayStop}
-        disabled={isLoading}
-        className={isPlaying ? 'playing' : ''}
-      >
-        {isPlaying ? 'STOP' : 'START'}
-      </button>
+      <div className="transport-buttons">
+        <Button variant="transport reset" onClick={onReset}>
+          RESET
+        </Button>
+        <Button
+          variant="transport play"
+          onClick={onPlayStop}
+          disabled={isLoading}
+          active={isPlaying}
+        >
+          {isPlaying ? 'STOP' : 'START'}
+        </Button>
+      </div>
     </div>
   )
 }
