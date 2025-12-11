@@ -11,7 +11,7 @@ import { QWERTY_MAP } from '../config/keyboard'
 
 function DrumMachine({ instruments }) {
   const audioEngine = useAudioEngine(instruments)
-  const synth = useSynthEngine()
+  const synth = useSynthEngine(audioEngine.audioContext, audioEngine.masterGain)
   const arpeggiator = useArpeggiator(synth)
   const sequencer = useSequencer(instruments, audioEngine, arpeggiator)
 

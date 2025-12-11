@@ -116,7 +116,7 @@ export function useArpeggiator(synth) {
     }
 
     // Play new note
-    synth.playNote('arp-' + noteName, noteData.freq)
+    synth.playNote('arp-' + noteName, noteData.freq, noteTime)
     lastPlayedNoteRef.current = noteName
 
     // Notify keyboard of current note

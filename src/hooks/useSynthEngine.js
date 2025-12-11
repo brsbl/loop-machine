@@ -3,8 +3,10 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 /**
  * Custom hook for oscillator-based synthesis
  * Manages note playback with ADSR envelope and waveform selection
+ * @param {AudioContext} sharedContext - Optional shared AudioContext from drum engine
+ * @param {GainNode} sharedMasterGain - Optional shared master gain node for routing audio
  */
-export function useSynthEngine() {
+export function useSynthEngine(sharedContext = null, sharedMasterGain = null) {
   const [waveform, setWaveformState] = useState('sawtooth')
   const [volume, setVolumeState] = useState(0.5)
 
@@ -14,6 +16,7 @@ export function useSynthEngine() {
   const activeNotesRef = useRef(new Map()) // noteId -> { oscillator, gainNode }
   const waveformRef = useRef('sawtooth')
   const volumeRef = useRef(0.5)
+  const isUsingSharedContext = useRef(false)
 
   // Keep refs in sync with state
   useEffect(() => {
@@ -34,29 +37,37 @@ export function useSynthEngine() {
   const ensureContext = useCallback(() => {
     if (audioContextRef.current) return audioContextRef.current
 
-    const ctx = new (window.AudioContext || window.webkitAudioContext)()
+    // Use shared context if provided, otherwise create our own
+    const ctx = sharedContext || new (window.AudioContext || window.webkitAudioContext)()
     audioContextRef.current = ctx
+    isUsingSharedContext.current = !!sharedContext
 
     // Create master gain
     const masterGain = ctx.createGain()
     masterGain.gain.value = volumeRef.current
     masterGainRef.current = masterGain
 
-    // Create limiter to prevent clipping
-    const limiter = ctx.createDynamicsCompressor()
-    limiter.threshold.value = -3
-    limiter.knee.value = 0
-    limiter.ratio.value = 20
-    limiter.attack.value = 0.001
-    limiter.release.value = 0.1
-    limiterRef.current = limiter
+    if (sharedContext && sharedMasterGain) {
+      // If using shared context, connect our master gain to the shared master gain
+      // This routes synth audio through the same analyser as drums
+      masterGain.connect(sharedMasterGain)
+    } else {
+      // Create limiter to prevent clipping (only for standalone mode)
+      const limiter = ctx.createDynamicsCompressor()
+      limiter.threshold.value = -3
+      limiter.knee.value = 0
+      limiter.ratio.value = 20
+      limiter.attack.value = 0.001
+      limiter.release.value = 0.1
+      limiterRef.current = limiter
 
-    // Connect: masterGain -> limiter -> destination
-    masterGain.connect(limiter)
-    limiter.connect(ctx.destination)
+      // Connect: masterGain -> limiter -> destination
+      masterGain.connect(limiter)
+      limiter.connect(ctx.destination)
+    }
 
     return ctx
-  }, [])
+  }, [sharedContext, sharedMasterGain])
 
   // Resume context if suspended (browser autoplay policy)
   const resumeContext = useCallback(async () => {
@@ -76,7 +87,7 @@ export function useSynthEngine() {
 
   // Play a note by frequency
   const playNote = useCallback(
-    (noteId, frequency) => {
+    (noteId, frequency, time) => {
       const ctx = ensureContext()
       if (ctx.state === 'suspended') {
         ctx.resume()
@@ -85,7 +96,7 @@ export function useSynthEngine() {
       // Don't play if already playing
       if (activeNotesRef.current.has(noteId)) return
 
-      const now = ctx.currentTime
+      const now = time ?? ctx.currentTime
 
       // Create oscillator
       const oscillator = ctx.createOscillator()
@@ -165,7 +176,8 @@ export function useSynthEngine() {
   useEffect(() => {
     return () => {
       stopAllNotes()
-      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      // Only close context if we created it ourselves (not shared)
+      if (!isUsingSharedContext.current && audioContextRef.current && audioContextRef.current.state !== 'closed') {
         audioContextRef.current.close()
       }
     }

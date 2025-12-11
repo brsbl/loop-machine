@@ -44,6 +44,7 @@ export function useAudioEngine(instruments) {
         // Create effect nodes for each instrument
         instruments.forEach(instrument => {
           const mainGain = ctx.createGain()
+          const lowpassFilter = ctx.createBiquadFilter()
           const reverbGain = ctx.createGain()
           const delayNode = ctx.createDelay(1.0)
           const delayFeedback = ctx.createGain()
@@ -51,17 +52,21 @@ export function useAudioEngine(instruments) {
           const outputGain = ctx.createGain()
 
           // Initial settings
+          lowpassFilter.type = 'lowpass'
+          lowpassFilter.frequency.value = 20000  // Start fully open
+          lowpassFilter.Q.value = 1
           delayNode.delayTime.value = 0
           delayFeedback.gain.value = 0
           delayWetGain.gain.value = 0
           reverbGain.gain.value = 0
 
           // Signal routing:
-          // mainGain -> outputGain (dry)
+          // mainGain -> lowpassFilter -> outputGain (dry)
           // mainGain -> reverbGain -> outputGain
           // mainGain -> delayNode -> delayFeedback -> delayNode (feedback loop)
           //                       -> delayWetGain -> outputGain
-          mainGain.connect(outputGain) // Dry signal
+          mainGain.connect(lowpassFilter)
+          lowpassFilter.connect(outputGain) // Dry signal with filter
           mainGain.connect(reverbGain)
           reverbGain.connect(outputGain)
           mainGain.connect(delayNode)
@@ -73,6 +78,7 @@ export function useAudioEngine(instruments) {
 
           effectNodesRef.current[instrument.id] = {
             mainGain,
+            lowpassFilter,
             reverbGain,
             delayNode,
             delayFeedback,
@@ -157,21 +163,28 @@ export function useAudioEngine(instruments) {
     const nodes = effectNodesRef.current[instrumentId]
     if (!nodes || !audioContextRef.current) return
 
-    const sliderValue = parseInt(value, 10)
+    const sliderValue = parseFloat(value)
     const currentTime = audioContextRef.current.currentTime
 
     if (effectType === 'reverb') {
-      const reverbAmount = sliderValue / 10
+      const reverbAmount = sliderValue
       nodes.reverbGain.gain.setValueAtTime(reverbAmount, currentTime)
     }
 
     if (effectType === 'delay') {
-      const delayTime = (sliderValue / 10) * 0.5
-      const feedbackAmount = (sliderValue / 10) * 0.7
-      const wetAmount = (sliderValue / 10) * 0.5
+      const delayTime = sliderValue * 0.5
+      const feedbackAmount = sliderValue * 0.7
+      const wetAmount = sliderValue * 0.5
       nodes.delayNode.delayTime.setValueAtTime(delayTime, currentTime)
       nodes.delayFeedback.gain.setValueAtTime(feedbackAmount, currentTime)
       nodes.delayWetGain.gain.setValueAtTime(wetAmount, currentTime)
+    }
+
+    if (effectType === 'filter') {
+      const minFreq = 200
+      const maxFreq = 20000
+      const cutoff = minFreq * Math.pow(maxFreq / minFreq, sliderValue)
+      nodes.lowpassFilter.frequency.setValueAtTime(cutoff, currentTime)
     }
   }, [])
 
@@ -195,18 +208,23 @@ export function useAudioEngine(instruments) {
     try {
       // Create effect nodes
       const mainGain = ctx.createGain()
+      const lowpassFilter = ctx.createBiquadFilter()
       const reverbGain = ctx.createGain()
       const delayNode = ctx.createDelay(1.0)
       const delayFeedback = ctx.createGain()
       const delayWetGain = ctx.createGain()
       const outputGain = ctx.createGain()
 
+      lowpassFilter.type = 'lowpass'
+      lowpassFilter.frequency.value = 20000  // Start fully open
+      lowpassFilter.Q.value = 1
       delayNode.delayTime.value = 0
       delayFeedback.gain.value = 0
       delayWetGain.gain.value = 0
       reverbGain.gain.value = 0
 
-      mainGain.connect(outputGain)
+      mainGain.connect(lowpassFilter)
+      lowpassFilter.connect(outputGain)
       mainGain.connect(reverbGain)
       reverbGain.connect(outputGain)
       mainGain.connect(delayNode)
@@ -217,7 +235,7 @@ export function useAudioEngine(instruments) {
       outputGain.connect(masterGainRef.current || ctx.destination)
 
       effectNodesRef.current[instrument.id] = {
-        mainGain, reverbGain, delayNode, delayFeedback, delayWetGain, outputGain,
+        mainGain, lowpassFilter, reverbGain, delayNode, delayFeedback, delayWetGain, outputGain,
       }
 
       // Load sample
@@ -234,6 +252,8 @@ export function useAudioEngine(instruments) {
   return {
     isLoading,
     analyser,
+    audioContext: audioContextRef.current,
+    masterGain: masterGainRef.current,
     playSound,
     setTrackVolume,
     setEffect,
