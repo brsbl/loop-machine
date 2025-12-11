@@ -1,6 +1,6 @@
 /**
  * URL State utilities for persisting sequencer state in URL
- * Uses compact encoding: notes as hex, effects as single chars
+ * Uses compact encoding: notes as hex, settings encoded
  */
 
 // Helper: Boolean array to hex string (4 chars for 16 steps)
@@ -16,40 +16,48 @@ function hexToState(hexString, steps) {
   return binaryString.split('').map(char => char === '1')
 }
 
-// Helper: Convert slider value (0-10) to char ('0'-'9', 'a')
-function valueToChar(val) {
-  const num = parseInt(val, 10)
-  if (num >= 0 && num <= 9) return String(num)
-  if (num === 10) return 'a'
-  return '0'
+// Helper: Encode float 0-1 to 2 hex chars (0-255)
+function floatToHex(val) {
+  const clamped = Math.max(0, Math.min(1, val))
+  const int = Math.round(clamped * 255)
+  return int.toString(16).padStart(2, '0')
 }
 
-// Helper: Convert char back to slider value (0-10)
-function charToValue(char) {
-  if (char >= '0' && char <= '9') return parseInt(char, 10)
-  if (char === 'a') return 10
-  return 0
+// Helper: Decode 2 hex chars to float 0-1
+function hexToFloat(hex, defaultValue = 0.8) {
+  if (!hex || hex.length !== 2) return defaultValue
+  // Validate hex characters before parsing
+  if (!/^[0-9a-fA-F]{2}$/.test(hex)) return defaultValue
+  const int = parseInt(hex, 16)
+  // Safety check for NaN (defensive programming)
+  if (Number.isNaN(int)) return defaultValue
+  return int / 255
 }
 
 /**
  * Encode current state to URL
+ * Format: notes_settings_bpm
+ * - notes: 4 hex chars per instrument (16 steps)
+ * - settings: 6 hex chars per instrument (volume 2, reverb 2, filter 2)
+ * - bpm: 3 digit number
  */
 export function encodeStateToUrl(pattern, trackSettings, instruments, bpm = 120) {
   let notesHex = ''
-  let effectsChars = ''
+  let settingsHex = ''
 
   instruments.forEach(instrument => {
     // Notes (16 steps -> 4 hex chars)
     notesHex += stateToHex(pattern[instrument.id] || [])
-    // Effects (reverb, delay as single chars each)
+    // Settings (volume, reverb, filter as 2 hex chars each)
     const settings = trackSettings[instrument.id] || {}
-    effectsChars += valueToChar(settings.reverb || 0)
-    effectsChars += valueToChar(settings.delay || 0)
+    settingsHex += floatToHex(settings.volume ?? 0.8)
+    settingsHex += floatToHex(settings.reverb ?? 0)
+    settingsHex += floatToHex(settings.filter ?? 1)
   })
 
   // BPM as 3-digit string (zero-padded)
   const bpmStr = String(bpm).padStart(3, '0')
-  const compactState = `${notesHex}_${effectsChars}_${bpmStr}`
+  const compactState = `${notesHex}_${settingsHex}_${bpmStr}`
   const newUrl = window.location.pathname + '?s=' + compactState
   window.history.replaceState(null, '', newUrl)
 }
@@ -68,18 +76,18 @@ export function decodeStateFromUrl(instruments, steps) {
 
   const compactState = params.get('s')
 
-  // Support both old format (notes_effects) and new format (notes_effects_bpm)
+  // Support both old format (notes_settings) and new format (notes_settings_bpm)
   if (compactState && compactState.includes('_')) {
     try {
       const parts = compactState.split('_')
       const notesPart = parts[0]
-      const effectsPart = parts[1]
+      const settingsPart = parts[1]
       const bpmPart = parts[2] // may be undefined for old URLs
 
       const pattern = {}
       const trackSettings = {}
       let noteOffset = 0
-      let effectOffset = 0
+      let settingsOffset = 0
 
       instruments.forEach(instrument => {
         // Load Notes
@@ -87,17 +95,18 @@ export function decodeStateFromUrl(instruments, steps) {
         pattern[instrument.id] = hexToState(noteHex, steps)
         noteOffset += 4
 
-        // Load Effects
-        const reverbChar = effectsPart[effectOffset]
-        const delayChar = effectsPart[effectOffset + 1]
+        // Load Settings (volume, reverb, filter)
+        const volumeHex = settingsPart.substring(settingsOffset, settingsOffset + 2)
+        const reverbHex = settingsPart.substring(settingsOffset + 2, settingsOffset + 4)
+        const filterHex = settingsPart.substring(settingsOffset + 4, settingsOffset + 6)
         trackSettings[instrument.id] = {
-          volume: 0.8,
+          volume: hexToFloat(volumeHex, 0.8),
+          reverb: hexToFloat(reverbHex, 0),
+          filter: hexToFloat(filterHex, 1),
           muted: false,
           solo: false,
-          reverb: charToValue(reverbChar),
-          delay: charToValue(delayChar)
         }
-        effectOffset += 2
+        settingsOffset += 6
       })
 
       result.pattern = pattern

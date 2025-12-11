@@ -45,7 +45,7 @@ describe('TransportControls', () => {
 
   it('calls onReset when Reset button is clicked', () => {
     render(<TransportControls {...defaultProps} />)
-    fireEvent.click(screen.getByRole('button', { name: '' })) // Reset button has no text
+    fireEvent.click(screen.getByText('RESET'))
     expect(defaultProps.onReset).toHaveBeenCalledTimes(1)
   })
 

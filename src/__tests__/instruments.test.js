@@ -45,8 +45,8 @@ describe('instruments config', () => {
       expect(DEFAULT_TRACK_SETTINGS.reverb).toBe(0)
     })
 
-    it('has default delay of 0', () => {
-      expect(DEFAULT_TRACK_SETTINGS.delay).toBe(0)
+    it('has default filter of 1', () => {
+      expect(DEFAULT_TRACK_SETTINGS.filter).toBe(1)
     })
 
     it('is not muted by default', () => {
@@ -93,7 +93,7 @@ describe('instruments config', () => {
 
       expect(settings.test.volume).toBe(DEFAULT_TRACK_SETTINGS.volume)
       expect(settings.test.reverb).toBe(DEFAULT_TRACK_SETTINGS.reverb)
-      expect(settings.test.delay).toBe(DEFAULT_TRACK_SETTINGS.delay)
+      expect(settings.test.filter).toBe(DEFAULT_TRACK_SETTINGS.filter)
       expect(settings.test.muted).toBe(DEFAULT_TRACK_SETTINGS.muted)
       expect(settings.test.solo).toBe(DEFAULT_TRACK_SETTINGS.solo)
     })
