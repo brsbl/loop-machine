@@ -16,16 +16,16 @@ const Knob = memo(function Knob({
   // Convert value to angle (0-270 degrees, starting from bottom-left)
   const range = max - min
   const normalized = (value - min) / range
-  const angle = normalized * 270 - 135 // -135 to 135 degrees
 
   // Arc path calculation for the value indicator
   const radius = (size - 8) / 2
   const centerX = size / 2
   const centerY = size / 2
 
-  // Calculate arc endpoint
-  const startAngle = -135 * (Math.PI / 180)
-  const endAngle = angle * (Math.PI / 180)
+  // Calculate arc angles to match background track rotation (135 degrees)
+  // Background track starts at 135° (bottom-left) and spans 270° to 45° (bottom-right)
+  const startAngle = 135 * (Math.PI / 180)
+  const endAngle = (135 + normalized * 270) * (Math.PI / 180)
 
   const startX = centerX + radius * Math.cos(startAngle)
   const startY = centerY + radius * Math.sin(startAngle)
