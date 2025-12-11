@@ -24,9 +24,13 @@ function floatToHex(val) {
 }
 
 // Helper: Decode 2 hex chars to float 0-1
-function hexToFloat(hex) {
-  if (!hex || hex.length !== 2) return 0.8
+function hexToFloat(hex, defaultValue = 0.8) {
+  if (!hex || hex.length !== 2) return defaultValue
+  // Validate hex characters before parsing
+  if (!/^[0-9a-fA-F]{2}$/.test(hex)) return defaultValue
   const int = parseInt(hex, 16)
+  // Safety check for NaN (defensive programming)
+  if (Number.isNaN(int)) return defaultValue
   return int / 255
 }
 
@@ -89,9 +93,9 @@ export function decodeStateFromUrl(instruments, steps) {
         const reverbHex = settingsPart.substring(settingsOffset + 2, settingsOffset + 4)
         const filterHex = settingsPart.substring(settingsOffset + 4, settingsOffset + 6)
         trackSettings[instrument.id] = {
-          volume: hexToFloat(volumeHex),
-          reverb: hexToFloat(reverbHex),
-          filter: hexToFloat(filterHex),
+          volume: hexToFloat(volumeHex, 0.8),
+          reverb: hexToFloat(reverbHex, 0),
+          filter: hexToFloat(filterHex, 1),
           muted: false,
           solo: false,
         }

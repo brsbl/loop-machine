@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef } from 'react'
+import { memo, useCallback, useRef, useEffect } from 'react'
 import * as Label from '@radix-ui/react-label'
 
 const Knob = memo(function Knob({
@@ -67,11 +67,24 @@ const Knob = memo(function Knob({
     document.addEventListener('mouseup', handleMouseUp)
   }, [value, min, max, range, step, onChange])
 
-  const handleWheel = useCallback((e) => {
-    e.preventDefault()
-    const delta = e.deltaY > 0 ? -step : step
-    const newValue = Math.min(max, Math.max(min, value + delta * 5))
-    onChange(Math.round(newValue / step) * step)
+  // Use useEffect to attach wheel listener with { passive: false }
+  // React 18 uses passive listeners by default, making e.preventDefault() ineffective
+  useEffect(() => {
+    const knob = knobRef.current
+    if (!knob) return
+
+    const handleWheel = (e) => {
+      e.preventDefault()
+      const delta = e.deltaY > 0 ? -step : step
+      const newValue = Math.min(max, Math.max(min, value + delta * 5))
+      onChange(Math.round(newValue / step) * step)
+    }
+
+    knob.addEventListener('wheel', handleWheel, { passive: false })
+
+    return () => {
+      knob.removeEventListener('wheel', handleWheel)
+    }
   }, [value, min, max, step, onChange])
 
   return (
@@ -80,7 +93,6 @@ const Knob = memo(function Knob({
         ref={knobRef}
         className="knob"
         onMouseDown={handleMouseDown}
-        onWheel={handleWheel}
         style={{ width: size, height: size }}
         role="slider"
         aria-valuenow={value}
