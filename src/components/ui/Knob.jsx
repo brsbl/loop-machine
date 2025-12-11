@@ -32,7 +32,9 @@ const Knob = memo(function Knob({
   const endX = centerX + radius * Math.cos(endAngle)
   const endY = centerY + radius * Math.sin(endAngle)
 
-  const largeArc = normalized > 0.5 ? 1 : 0
+  // largeArc flag should be 1 when arc exceeds 180 degrees
+  // For a 270 degree span, 180/270 = 0.6667 (2/3)
+  const largeArc = normalized > 2 / 3 ? 1 : 0
 
   const handleMouseDown = useCallback((e) => {
     e.preventDefault()
