@@ -2,7 +2,7 @@
 
 A browser-based drum sequencer/loop machine built with vanilla JavaScript and the Web Audio API.
 
-<img width="1547" height="919" alt="Screenshot 2026-02-02 at 11 09 54 PM" src="https://github.com/user-attachments/assets/96332914-ee74-40f1-830d-249a67b5ba21" />
+<img width="1379" height="868" alt="Screenshot 2026-02-03 at 12 01 15 AM" src="https://github.com/user-attachments/assets/294b555e-6bd5-4b21-b31c-ce46df9f1b31" />
 
 ## Features
 
