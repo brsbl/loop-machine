@@ -17,17 +17,10 @@ const Knob = memo(function Knob({
   const range = max - min
   const normalized = (value - min) / range
 
-  // Render at 2x for crisp display on retina screens
-  const scale = 2
-  const viewSize = size * scale
-  const strokeWidth = 18
-
   // Arc path calculation for the value indicator
-  // Outer stroke: radius is inner edge, so add half stroke width
-  const innerRadius = (viewSize - 32) / 2
-  const radius = innerRadius + strokeWidth / 2
-  const centerX = viewSize / 2
-  const centerY = viewSize / 2
+  const radius = (size - 8) / 2
+  const centerX = size / 2
+  const centerY = size / 2
 
   // Calculate arc angles to match background track rotation (135 degrees)
   // Background track starts at 135° (bottom-left) and spans 270° to 45° (bottom-right)
@@ -108,19 +101,7 @@ const Knob = memo(function Knob({
         aria-label={label}
         tabIndex={0}
       >
-        <svg
-          width={size}
-          height={size}
-          viewBox={`0 0 ${viewSize} ${viewSize}`}
-          style={{ shapeRendering: 'geometricPrecision' }}
-        >
-          {/* Clip path for outer stroke effect */}
-          <defs>
-            <clipPath id={`knob-clip-${size}`}>
-              <circle cx={centerX} cy={centerY} r={innerRadius + strokeWidth} />
-            </clipPath>
-          </defs>
-
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
           {/* Background track */}
           <circle
             cx={centerX}
@@ -128,11 +109,10 @@ const Knob = memo(function Knob({
             r={radius}
             fill="none"
             stroke="#3a3a3a"
-            strokeWidth={strokeWidth}
+            strokeWidth="4"
             strokeLinecap="round"
             strokeDasharray={`${radius * Math.PI * 1.5} ${radius * Math.PI * 2}`}
             transform={`rotate(135 ${centerX} ${centerY})`}
-            clipPath={`url(#knob-clip-${size})`}
           />
 
           {/* Value arc */}
@@ -141,9 +121,8 @@ const Knob = memo(function Knob({
               d={`M ${startX} ${startY} A ${radius} ${radius} 0 ${largeArc} 1 ${endX} ${endY}`}
               fill="none"
               stroke="#f5a623"
-              strokeWidth={strokeWidth}
+              strokeWidth="4"
               strokeLinecap="round"
-              clipPath={`url(#knob-clip-${size})`}
             />
           )}
 
@@ -151,7 +130,7 @@ const Knob = memo(function Knob({
           <circle
             cx={centerX}
             cy={centerY}
-            r={innerRadius - 6}
+            r={radius - 8}
             fill="#2a2a2a"
           />
 
@@ -159,10 +138,10 @@ const Knob = memo(function Knob({
           <line
             x1={centerX}
             y1={centerY}
-            x2={centerX + (innerRadius - 16) * Math.cos(endAngle)}
-            y2={centerY + (innerRadius - 16) * Math.sin(endAngle)}
+            x2={centerX + (radius - 12) * Math.cos(endAngle)}
+            y2={centerY + (radius - 12) * Math.sin(endAngle)}
             stroke="#f5a623"
-            strokeWidth="6"
+            strokeWidth="2"
             strokeLinecap="round"
           />
         </svg>
