@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* 7-segment LED display font */
+@font-face {
+  font-family: 'DSEG7';
+  src: url('/fonts/DSEG7Classic-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 /* Reset default styles for consistency */
@@ -12,7 +20,7 @@
 
 body {
   font-family: "Helvetica Neue", Arial, sans-serif;
-  background-color: #8a9a9c;
+  background-color: #d4d0c8;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -93,22 +101,77 @@ body {
   letter-spacing: 1.5px;
 }
 
-.tempo-display {
-  background: #c5c8b8;
-  padding: 8px 14px;
+.tempo-input-group {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.tempo-btn-stack {
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, #4a4a4a 0%, #2a2a2a 100%);
   border-radius: 4px;
-  border: 3px solid #1a1a1a;
+  border: 1px solid #1a1a1a;
+  overflow: hidden;
   box-shadow:
-    inset 0 2px 4px rgba(0, 0, 0, 0.2),
-    0 1px 0 rgba(255, 255, 255, 0.1);
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tempo-btn {
+  flex: 1;
+  width: 28px;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  border-radius: 0;
+  cursor: pointer;
+  background: transparent;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.tempo-btn:first-child {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.tempo-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.tempo-btn:active {
+  background: rgba(0, 0, 0, 0.2);
+  color: #f5a623;
+}
+
+.tempo-display {
+  background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 2px solid #0a0a0a;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.8),
+    inset 0 0 20px rgba(0, 0, 0, 0.5),
+    0 1px 0 rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #tempo-value {
-  font-family: "LCD", "Digital-7", "Courier New", monospace;
+  font-family: 'DSEG7', "Courier New", monospace;
   font-size: 2em;
-  color: #1a1a1a;
+  color: #e63939;
+  text-shadow: 0 0 4px rgba(230, 57, 57, 0.5);
   letter-spacing: 2px;
-  font-weight: bold;
+  font-weight: normal;
   background: transparent;
   border: none;
   width: 3.5ch;
@@ -124,8 +187,8 @@ body {
 }
 
 #tempo-value:focus {
-  background: rgba(0, 0, 0, 0.05);
-  border-radius: 2px;
+  color: #ff4d4d;
+  text-shadow: 0 0 6px rgba(255, 77, 77, 0.6);
 }
 
 /* --- SEQUENCER SECTION --- */
@@ -138,7 +201,8 @@ body {
 /* --- DRUMS SECTION --- */
 .drums-row {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
+  justify-content: center;
   gap: 12px;
 }
 
@@ -157,16 +221,30 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  padding: 12px 16px;
-  /* top padding: match drums container border (1px) + padding (12px) + step numbers height (20px) + gap (10px) */
-  padding-top: 43px;
+  padding: 14px 16px;
+  /* top padding: match drums container border (1px) + padding (12px) */
+  padding-top: 13px;
   background: linear-gradient(180deg, #d8d4cc 0%, #c8c4bc 100%);
   border-radius: 8px;
   border: 1px solid rgba(0, 0, 0, 0.15);
   flex-shrink: 0;
-  align-self: flex-start;
-  width: 156px; /* align right edge with transport and visualizer */
+  align-self: stretch;
+  width: 203px; /* match transport controls width */
   box-sizing: border-box;
+}
+
+/* Knob labels row - single row above all track knobs */
+.knob-labels-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 20px; /* match step numbers row height */
+  font-size: 10px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  width: 100%;
 }
 
 /* Step numbers row */
@@ -175,10 +253,16 @@ body {
   align-items: center;
 }
 
+/* Instrument labels column - separate from pads */
+.instrument-labels-column {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .instrument-label-spacer,
 .label-spacer {
-  width: 90px;
-  height: 20px; /* match step number height */
+  height: 20px; /* match step number row height */
   flex-shrink: 0;
 }
 
@@ -191,7 +275,6 @@ body {
 .step-numbers {
   display: flex;
   gap: 6px;
-  padding-left: 68px; /* align with pads: track-label width (60px) + gap (8px) */
 }
 
 /* Step number groups to match pad groups */
@@ -212,11 +295,12 @@ body {
   font-size: 1.05em;
   font-weight: 600;
   color: #444;
+  margin: 2px; /* match note-button margin for alignment */
 }
 
 /* --- ARPEGGIATOR TRACK --- */
 .arp-notes {
-  padding-left: 6px; /* align with drum pads */
+  /* Left aligned */
 }
 
 /* Arp pads - different color scheme */
@@ -236,9 +320,10 @@ body {
 /* Instrument labels */
 .instrument-label {
   width: 90px;
-  height: 42px; /* match pad height */
+  height: 52px; /* match track controls height */
   display: flex;
   align-items: center;
+  justify-content: flex-end; /* right-align to sit next to pads */
   font-size: 1.125em;
   font-weight: 700;
   color: #222;
@@ -287,9 +372,9 @@ body {
 .track-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-around;
   gap: 8px;
-  height: 42px; /* match instrument row height */
+  height: 52px; /* match larger knob size */
 }
 
 /* --- KNOB CONTROLS --- */
@@ -304,6 +389,11 @@ body {
   cursor: grab;
   user-select: none;
   touch-action: none;
+}
+
+.knob svg {
+  display: block;
+  overflow: visible;
 }
 
 .knob:active {
@@ -455,7 +545,8 @@ body {
 /* --- NOTE BUTTONS (PADS) --- */
 .note-button {
   width: 36px;
-  height: 42px;
+  height: 52px;
+  margin: 2px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -524,6 +615,7 @@ body {
 .synth-row {
   display: flex;
   align-items: stretch;
+  justify-content: center;
   gap: 12px;
 }
 
@@ -531,11 +623,14 @@ body {
   display: flex;
   align-items: stretch;
   flex-shrink: 0;
+  width: 90px; /* match instrument-labels-column width to align synth grid with drums grid */
+  justify-content: flex-end;
 }
 
 .synth-grid-container {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
   gap: 12px;
   background: linear-gradient(180deg, #3a3a3a 0%, #2a2a2a 100%);
   border-radius: 8px;
@@ -548,14 +643,18 @@ body {
   display: flex;
   align-items: stretch;
   flex-shrink: 0;
-  width: 156px; /* align right edge with knobs and visualizer */
+  width: 203px; /* match track controls width */
 }
 
 /* Synth controls row (direction, speed, wave) */
 .synth-controls-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
+  /* Offset to align with synth-grid: 90px (vol container) + 12px (gap) on left, 203px (transport) + 12px (gap) on right */
+  padding-left: 102px;
+  padding-right: 215px;
 }
 
 .synth-controls-center {
@@ -579,7 +678,7 @@ body {
 /* Right visualizer - match transport/knobs width */
 .visualizer-container:last-child {
   flex: none;
-  width: 156px;
+  width: 203px;
 }
 
 /* Audio visualizer canvas wrapper */
@@ -607,6 +706,8 @@ body {
   box-shadow:
     inset 0 2px 6px rgba(0, 0, 0, 0.4),
     0 1px 0 rgba(255, 255, 255, 0.1);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .transport-buttons {
@@ -675,7 +776,7 @@ body {
   background: linear-gradient(180deg, #e74c3c 0%, #c0392b 100%);
   border: 1px solid #a93226;
   color: #fff;
-  min-width: 52px;
+  width: 62px; /* fixed width so START/STOP don't change button size */
 }
 
 .btn-play:hover {
@@ -839,8 +940,8 @@ body {
 /* --- KEYBOARD SECTION --- */
 .keyboard-section {
   display: flex;
-  justify-content: flex-start;
-  padding-left: 6px; /* align with drum pads */
+  justify-content: center;
+  align-self: stretch;
 }
 
 .keyboard {
@@ -937,27 +1038,75 @@ body {
     0 0 16px rgba(245, 166, 35, 0.7);
 }
 
-/* Key hints (QWERTY letters) */
-.key-hint {
+/* Note name on piano keys */
+.note-name {
   position: absolute;
-  bottom: 8px;
+  top: 8px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  opacity: 0.5;
+  font-size: 12px;
+  font-weight: 700;
   pointer-events: none;
   user-select: none;
 }
 
+.key.white .note-name {
+  color: #444;
+}
+
+.key.black .note-name {
+  color: #aaa;
+}
+
+.key.white.held .note-name,
+.key.white.playing .note-name {
+  color: #fff;
+}
+
+/* Key hints container (QWERTY letters) */
+.key-hint-container {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  padding: 2px 5px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.key-hint {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.key.white .key-hint-container {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 .key.white .key-hint {
-  color: #666;
+  color: #555;
+}
+
+.key.black .key-hint-container {
+  background: rgba(255, 255, 255, 0.15);
+  bottom: 4px;
 }
 
 .key.black .key-hint {
-  color: #888;
-  bottom: 4px;
+  color: #999;
+}
+
+.key.white.held .key-hint-container,
+.key.white.playing .key-hint-container {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.key.white.held .key-hint,
+.key.white.playing .key-hint {
+  color: #fff;
 }
 
 /* Position keys relatively for hint positioning */

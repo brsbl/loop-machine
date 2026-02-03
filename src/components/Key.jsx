@@ -17,13 +17,21 @@ function Key({ note, type, isHeld, isPlaying, keyHint, onToggle }) {
     isPlaying ? 'playing' : '',
   ].filter(Boolean).join(' ')
 
+  // Format note name (e.g., "C#3" -> "C#")
+  const noteName = note.replace(/\d+$/, '')
+
   return (
     <div
       className={classNames}
       data-note={note}
       onClick={handleClick}
     >
-      {keyHint && <span className="key-hint">{keyHint}</span>}
+      <span className="note-name">{noteName}</span>
+      {keyHint && (
+        <span className="key-hint-container">
+          <span className="key-hint">{keyHint}</span>
+        </span>
+      )}
     </div>
   )
 }

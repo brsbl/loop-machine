@@ -19,7 +19,7 @@ const Track = memo(function Track({
 
   return (
     <div className="track-row">
-      <span className="track-label">{instrument.name}</span>
+      {showLabel && <span className="track-label">{instrument.name}</span>}
       <div className="notes-container">
         {padGroups.map((group, groupIndex) => (
           <div

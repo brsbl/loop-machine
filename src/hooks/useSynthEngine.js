@@ -85,6 +85,19 @@ export function useSynthEngine(sharedContext = null, sharedMasterGain = null) {
     release: 0.2, // 200ms
   }
 
+  // Get filter cutoff based on waveform type
+  const getFilterCutoff = (waveformType) => {
+    switch (waveformType) {
+      case 'sawtooth':
+      case 'square':
+        return 2500
+      case 'triangle':
+      case 'sine':
+      default:
+        return 8000
+    }
+  }
+
   // Play a note by frequency
   const playNote = useCallback(
     (noteId, frequency, time) => {
@@ -103,6 +116,12 @@ export function useSynthEngine(sharedContext = null, sharedMasterGain = null) {
       oscillator.type = waveformRef.current
       oscillator.frequency.setValueAtTime(frequency, now)
 
+      // Create low-pass filter to tame harsh high frequencies
+      const filter = ctx.createBiquadFilter()
+      filter.type = 'lowpass'
+      filter.frequency.setValueAtTime(getFilterCutoff(waveformRef.current), now)
+      filter.Q.setValueAtTime(0.7, now)
+
       // Create gain for envelope
       const gainNode = ctx.createGain()
       gainNode.gain.setValueAtTime(0, now)
@@ -115,15 +134,16 @@ export function useSynthEngine(sharedContext = null, sharedMasterGain = null) {
         now + envelope.attack + envelope.decay
       )
 
-      // Connect: oscillator -> gainNode -> masterGain
-      oscillator.connect(gainNode)
+      // Connect: oscillator -> filter -> gainNode -> masterGain
+      oscillator.connect(filter)
+      filter.connect(gainNode)
       gainNode.connect(masterGainRef.current)
 
       // Start oscillator
       oscillator.start(now)
 
       // Store reference for stopping later
-      activeNotesRef.current.set(noteId, { oscillator, gainNode })
+      activeNotesRef.current.set(noteId, { oscillator, gainNode, filter })
     },
     [ensureContext]
   )
@@ -161,9 +181,13 @@ export function useSynthEngine(sharedContext = null, sharedMasterGain = null) {
   // Set waveform type
   const setWaveform = useCallback((type) => {
     setWaveformState(type)
-    // Update any currently playing oscillators
-    for (const { oscillator } of activeNotesRef.current.values()) {
+    // Update any currently playing oscillators and their filters
+    const ctx = audioContextRef.current
+    for (const { oscillator, filter } of activeNotesRef.current.values()) {
       oscillator.type = type
+      if (filter && ctx) {
+        filter.frequency.setValueAtTime(getFilterCutoff(type), ctx.currentTime)
+      }
     }
   }, [])
 

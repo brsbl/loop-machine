@@ -2,7 +2,6 @@ import Track from './Track'
 import ArpTrack from './ArpTrack'
 import TrackControls from './TrackControls'
 import TransportControls from './TransportControls'
-import AudioVisualizer from './AudioVisualizer'
 
 function Sequencer({
   instruments,
@@ -48,8 +47,19 @@ function Sequencer({
 
   return (
     <div className="sequencer-section">
-      {/* Drums section - step numbers + 3 drum rows + knobs */}
+      {/* Drums section - labels + step numbers + 3 drum rows + knobs */}
       <div className="drums-row">
+        {/* Instrument labels column */}
+        <div className="instrument-labels-column">
+          <div className="label-spacer" /> {/* Spacer for step numbers row */}
+          {instruments.map(instrument => (
+            <div key={instrument.id} className="instrument-label">
+              {instrument.name}
+            </div>
+          ))}
+        </div>
+
+        {/* Drums grid - step numbers + pads */}
         <div className="drums-grid-container">
           {/* Step numbers row */}
           <div className="step-numbers">
@@ -65,7 +75,7 @@ function Sequencer({
             ))}
           </div>
 
-          {/* Instrument steps */}
+          {/* Instrument pads only */}
           {instruments.map(instrument => (
             <Track
               key={instrument.id}
@@ -146,16 +156,9 @@ function Sequencer({
             </div>
           </div>
 
-          {/* Synth controls row - same 3-column layout as synth row */}
+          {/* Synth controls row */}
           <div className="synth-controls-row">
-            {/* Left visualizer */}
-            <div className="visualizer-container">
-              <AudioVisualizer analyser={analyser} barCount={12} />
-            </div>
-
-            {/* Center - controls aligned with synth-grid-container */}
-            <div className="synth-controls-center">
-              <div className="synth-controls-container">
+            <div className="synth-controls-container">
                 {/* Direction control */}
                 <div className="control-box">
                   <span className="control-box-label">DIRECTION</span>
@@ -233,12 +236,6 @@ function Sequencer({
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* Right visualizer */}
-            <div className="visualizer-container">
-              <AudioVisualizer analyser={analyser} barCount={12} />
-            </div>
           </div>
         </div>
       )}

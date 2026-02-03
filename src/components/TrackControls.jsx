@@ -17,8 +17,7 @@ const TrackControls = memo(function TrackControls({
         min={0}
         max={1}
         step={0.01}
-        label="VOL"
-        size={40}
+        size={52}
       />
       <Knob
         value={reverb}
@@ -26,8 +25,7 @@ const TrackControls = memo(function TrackControls({
         min={0}
         max={1}
         step={0.01}
-        label="REV"
-        size={40}
+        size={52}
       />
       <Knob
         value={filter}
@@ -35,8 +33,7 @@ const TrackControls = memo(function TrackControls({
         min={0}
         max={1}
         step={0.01}
-        label="FLT"
-        size={40}
+        size={52}
       />
     </div>
   )

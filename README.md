@@ -69,6 +69,10 @@ loop-machine/
 - CSS Grid for layout
 - No external dependencies
 
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. For bugs or feature requests, please [open an issue](https://github.com/brsbl/loop-machine/issues/new).
+
 ## License
 
 MIT
