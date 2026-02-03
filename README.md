@@ -2,6 +2,8 @@
 
 A browser-based drum sequencer/loop machine built with vanilla JavaScript and the Web Audio API.
 
+<img width="1547" height="919" alt="Screenshot 2026-02-02 at 11 09 54 PM" src="https://github.com/user-attachments/assets/96332914-ee74-40f1-830d-249a67b5ba21" />
+
 ## Features
 
 - **16-step sequencer** with 3 instrument tracks (hi-hat, snare, kick)
