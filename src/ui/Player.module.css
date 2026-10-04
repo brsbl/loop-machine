@@ -1,0 +1,137 @@
+/* Phone listening player: the same chrome housing and 909 pieces, one column. */
+.player {
+  width: min(100%, 420px);
+  padding: 6px;
+  border-radius: 18px;
+}
+
+.face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  padding: 20px 18px 22px;
+}
+
+.face > :first-child {
+  align-self: flex-start;
+}
+
+.now {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+  gap: 12px;
+}
+
+.loopName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The tempo digits are a read-only span here, not the panel's input. */
+.digits {
+  position: absolute;
+  right: 10px;
+}
+
+/* The loop running, read-only: one row per part, a cell per step. */
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-self: stretch;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 46px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.rowLabel {
+  font: 800 9px/1 var(--font-label);
+  font-stretch: 108%;
+  letter-spacing: 0.06em;
+  color: var(--label);
+}
+
+.beats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+
+.beat {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background: linear-gradient(#f2eee6, #ded9cf);
+  box-shadow: 0 0 0 1px rgba(42, 44, 47, 0.35);
+  transition:
+    background var(--fade),
+    box-shadow var(--fade);
+}
+
+.cell[data-on='true'] {
+  background: linear-gradient(color-mix(in oklab, var(--fire-top) 50%, #ece6da), color-mix(in oklab, var(--fire-bottom) 50%, #dcd4c3));
+}
+
+/* The playhead: a darker key with a firmer ring, so it reads at phone size. */
+.cell[data-now='true'] {
+  background: linear-gradient(#d9d5cc, #c4bfb5);
+  box-shadow: 0 0 0 1px rgba(42, 44, 47, 0.7);
+  transition-duration: var(--flash);
+}
+
+.cell[data-on='true'][data-now='true'] {
+  background: linear-gradient(var(--fire-top), var(--fire-bottom));
+  box-shadow:
+    0 0 0 1px rgba(42, 44, 47, 0.35),
+    0 0 8px rgba(var(--fire-glow), 0.6);
+}
+
+/* The one big key: START, orange while playing, like the panel's. */
+.play {
+  width: 100%;
+  max-width: 260px;
+  height: 64px;
+  border: 1px solid var(--hair);
+  border-radius: 14px;
+  background: var(--key-face);
+  box-shadow:
+    0 1px 2px rgba(31, 33, 36, 0.1),
+    inset 0 -2px 0 rgba(31, 33, 36, 0.06);
+  font: 800 15px/1 var(--font-label);
+  font-stretch: 108%;
+  letter-spacing: 0.12em;
+  color: var(--label);
+}
+
+.play[data-playing='true'] {
+  background: linear-gradient(#f2a587, #d9744f);
+  color: #fff8ef;
+}
+
+.play:active {
+  transform: translateY(1px);
+}
+
+.play:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 3px;
+}
+
+.hint {
+  margin: 0;
+  font: 500 12px/1.4 var(--font-label);
+  color: var(--muted);
+  text-align: center;
+}

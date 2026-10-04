@@ -1,28 +1,14 @@
-/* Glass housing over the wallpaper; the panel inside carries the 909 layout. */
-/* Polished-chrome housing frame, as on the original direction A, around the matte panel. */
+/* The chrome housing at full panel width; the face inside carries the 909 layout. */
 .device {
+  composes: housing from './Housing.module.css';
   width: 1128px;
-  padding: 8px;
-  border-radius: 20px;
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.55), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.12)),
-    linear-gradient(90deg, #b9bcbf, #eef0f1 12%, #c9ccce 30%, #f6f7f8 50%, #c3c6c9 70%, #eceeef 88%, #b3b6b9);
-  box-shadow:
-    0 30px 60px -28px rgba(32, 38, 56, 0.45),
-    0 2px 6px rgba(32, 38, 56, 0.12),
-    0 0 0 1px rgba(32, 38, 56, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
 }
 
 .face {
+  composes: face from './Housing.module.css';
   padding: 22px 28px 26px;
-  border-radius: 13px;
-  background: #f7f4ee;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 0 0 1px rgba(0, 0, 0, 0.12);
 }
+
 
 /* Nameplate on the left; the global pattern and undo keys on the right, like the 909's pattern section. */
 .top {
@@ -32,13 +18,6 @@
   margin-bottom: 32px;
 }
 
-/* "DRUM MACHINE + SYNTH" is sized to run exactly as wide as "LM-919". */
-.nameplate {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-}
 
 .globals {
   display: flex;
@@ -69,28 +48,8 @@
   gap: 16px;
 }
 
-.descriptor {
-  font: 400 9.5px/1 var(--font-nameplate);
-  letter-spacing: 0.16em;
-  color: var(--navy);
-  white-space: nowrap;
-}
 
-/* Carved into the panel and paint-filled; see the "carved" filter in LoopMachine.tsx. */
-.model {
-  margin: 0;
-  font: 400 34.53px/1 var(--font-nameplate);
-  letter-spacing: 0.05em;
-  color: var(--navy);
-  white-space: nowrap;
-  filter: url(#carved);
-}
 
-.defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
 
 .cols {
   display: grid;

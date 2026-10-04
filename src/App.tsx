@@ -4,11 +4,16 @@ import { DRUMS, noteForKey } from './instruments'
 import { createSessionStore } from './session/store'
 import { readSessionFromLocation, writeSessionToLocation } from './session/url'
 import { LoopMachine } from './ui/LoopMachine'
+import { Player } from './ui/Player'
+import { useMediaQuery } from './ui/useMediaQuery'
 import styles from './App.module.css'
 
 /** Panel width plus its glass border, and the page margin on each side. */
 const PANEL_WIDTH = 1128
 const PAGE_GUTTER = 48
+
+/** Phones get a listening player; the full panel needs room to edit. */
+const PHONE_QUERY = '(max-width: 700px)'
 
 /** How long the share link may trail the session. Browsers rate-limit address rewrites, and a knob drag changes the session many times a second. */
 const LINK_DELAY_MS = 250
@@ -56,6 +61,9 @@ export function App() {
     return () => window.removeEventListener('resize', fit)
   }, [])
 
+  const phone = useMediaQuery(PHONE_QUERY)
+  const onStartStop = () => (engine.isPlaying ? engine.stop() : void engine.start())
+
   // Computer keys toggle notes, like clicking the keyboard; ⌘Z / Ctrl+Z undoes.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -76,13 +84,21 @@ export function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [store])
 
+  if (phone) {
+    return (
+      <main className={`${styles.app} ${styles.phone}`}>
+        <Player store={store} playhead={playhead} isPlaying={isPlaying} onStartStop={onStartStop} />
+      </main>
+    )
+  }
+
   return (
     <main className={styles.app} style={{ zoom }}>
       <LoopMachine
         store={store}
         playhead={playhead}
         isPlaying={isPlaying}
-        onStartStop={() => (engine.isPlaying ? engine.stop() : void engine.start())}
+        onStartStop={onStartStop}
         onReset={() => {
           engine.stop()
           store.dispatch({ type: 'reset' })
