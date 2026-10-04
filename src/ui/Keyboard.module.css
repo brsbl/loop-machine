@@ -146,8 +146,13 @@
   transition-duration: var(--flash);
 }
 
-.white:focus-visible,
-.black:focus-visible {
+.white:focus-visible {
   outline: 2px solid var(--navy);
   outline-offset: -2px;
+}
+
+/* Navy disappears on ebony, so black keys get a cream ring inside the edge. */
+.black:focus-visible {
+  outline: 2px solid #fdfbf6;
+  outline-offset: -4px;
 }

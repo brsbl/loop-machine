@@ -74,10 +74,33 @@ export function encodeSession(session: Session): string {
   return [LINK_VERSION, String(session.bpm), ...drums, synth].join('~')
 }
 
+/**
+ * Links from the previous app: `<steps>_<knobs>[_<bpm>]`, 4 hex of steps and
+ * 6 hex of knobs (volume, reverb, filter) per drum, in this drum order.
+ */
+const V1_LINK = /^([0-9a-f]{12})_([0-9a-f]{18})(?:_(\d{1,3}))?$/i
+const V1_DRUMS = ['hihat', 'snare', 'kick']
+
+/** Keeps old shared beats playing: their steps, volumes, and tempo carry over. Reverb and filter have no equivalent and stay at defaults. */
+function decodeV1(match: RegExpExecArray): Session {
+  const session = defaultSession()
+  const [, steps, knobs, bpm] = match
+  V1_DRUMS.forEach((id, i) => {
+    if (!Object.hasOwn(session.drums, id)) return
+    const track = session.drums[id]
+    track.steps = hexToBits(steps.slice(i * 4, i * 4 + 4), STEPS) ?? track.steps
+    track.volume = hexByte(knobs.slice(i * 6, i * 6 + 2)) ?? track.volume
+  })
+  if (bpm) session.bpm = clampBpm(Number(bpm))
+  return session
+}
+
 /** Reads a share-link payload. Anything missing or malformed falls back to the default for that part. */
 export function decodeSession(payload: string | null): Session {
   const session = defaultSession()
   if (!payload) return session
+  const v1 = V1_LINK.exec(payload)
+  if (v1) return decodeV1(v1)
   const [version, bpm, ...parts] = payload.split('~')
   if (version !== LINK_VERSION) return session
 

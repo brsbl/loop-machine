@@ -55,9 +55,21 @@ describe('share link', () => {
     expect(s.drums.kick.steps[0]).toBe(true)
   })
 
+  it("plays links from the previous app's format", () => {
+    const s = decodeSession('8888080880a2_cc0000cc3300cc00ff_098')
+    const on = (steps: boolean[]) => steps.flatMap((v, i) => (v ? [i] : []))
+    expect(on(s.drums.hihat.steps)).toEqual([0, 4, 8, 12])
+    expect(on(s.drums.snare.steps)).toEqual([4, 12])
+    expect(on(s.drums.kick.steps)).toEqual([0, 8, 10, 14])
+    expect(s.drums.hihat.volume).toBeCloseTo(0.8, 2)
+    expect(s.drums.snare.volume).toBeCloseTo(0.8, 2)
+    expect(s.bpm).toBe(98)
+    expect(decodeSession('888800000000_cc00ffcc00ffcc00ff').bpm).toBe(120)
+  })
+
   it('falls back to defaults for missing, unknown, or malformed parts', () => {
     expect(decodeSession(null)).toEqual(defaultSession())
-    expect(decodeSession('8888080880a2_cc0000cc3300cc00ff_098')).toEqual(defaultSession())
+    expect(decodeSession('8888_cc00ff_098')).toEqual(defaultSession())
     const s = decodeSession('2~999~cowbell.ffff.ffffff~snare.zz.qq~syn.ffff.zz.x.3.w.zz')
     expect(s.bpm).toBe(200)
     expect(s.drums.snare).toEqual(defaultSession().drums.snare)
