@@ -49,7 +49,8 @@ Its step row, knobs, firing color, and share-link field follow automatically.
 | `pnpm build` | Production build |
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | TypeScript |
-| `pnpm test` | Vitest |
+| `pnpm test` | Vitest unit and component tests |
+| `pnpm test:e2e` | Playwright smoke tests of the production build in Chrome |
 
 ## Credits
 

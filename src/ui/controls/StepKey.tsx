@@ -18,7 +18,7 @@ interface StepKeyProps {
 export const StepKey = memo(function StepKey({ step, on, now, variant = 'drum', label, onToggle }: StepKeyProps) {
   const className = [styles.step, variant === 'synth' && styles.synth, now && styles.now].filter(Boolean).join(' ')
   return (
-    <button type="button" className={className} aria-pressed={on} aria-label={label} onClick={() => onToggle(step)}>
+    <button type="button" className={className} aria-pressed={on} aria-current={now ? 'step' : undefined} aria-label={label} onClick={() => onToggle(step)}>
       <b className={styles.led} />
       <span className={styles.key} />
     </button>

@@ -39,3 +39,17 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Install Chrome for browser tests
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Browser smoke test
+        run: pnpm test:e2e
+
+      - name: Upload browser test traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7
