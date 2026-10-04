@@ -11,7 +11,7 @@ A drum machine + synth in your browser, styled after the Roland TR-909. Program 
 - **Exploring:** six house patterns to start from, and undo (⌘Z / Ctrl+Z) for every change
 - **Playback:** on steps carry a soft tint of their instrument's color and light up fully when they fire; a beat band marks the four beats; the note playing lights its key's LED
 
-  ![Step 5 firing: the snare and kick keys light up in their colors](docs/images/lm-919-playing.png)
+  ![Close-up mid-beat on French Filter: the snare, kick, and synth keys fire in their colors, and the held chord's keys light their LEDs](docs/images/lm-919-closeup.png)
 - **Controls:** knobs click to 11 notches and the fader to 9. Drag, click a notch, scroll, or use the arrow keys
 - **Computer keyboard:** A–C and W–\ toggle notes, like a piano layout
 - **Share links:** the URL holds the whole loop, drums and synth included
