@@ -35,7 +35,8 @@ pnpm dev        # http://localhost:3000
 pnpm build
 pnpm lint
 pnpm typecheck
-pnpm test
+pnpm test       # Vitest: logic and component tests (jsdom, no Web Audio)
+pnpm test:e2e   # Playwright: the production build in real Chrome
 ```
 
-CI runs lint, typecheck, test, and build on every PR.
+CI runs lint, typecheck, test, build, and the browser smoke tests on every PR.
