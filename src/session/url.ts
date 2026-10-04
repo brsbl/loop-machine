@@ -97,8 +97,9 @@ export function decodeSession(payload: string | null): Session {
       s.octave = OCTAVES.find((o) => String(o) === octave) ?? s.octave
       continue
     }
+    // Only real drum ids: a link naming "__proto__" or "constructor" must not reach Object.prototype.
+    if (!Object.hasOwn(session.drums, id)) continue
     const track = session.drums[id]
-    if (!track) continue
     const [steps, knobs = ''] = fields
     track.steps = hexToBits(steps, STEPS) ?? track.steps
     track.volume = hexByte(knobs.slice(0, 2)) ?? track.volume

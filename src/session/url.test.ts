@@ -48,6 +48,13 @@ describe('share link', () => {
     expect(s.synth.octave).toBe(0)
   })
 
+  it('ignores drum ids that would reach the object prototype', () => {
+    const s = decodeSession('2~120~__proto__.ffff.ffffff~constructor.ffff.ffffff~kick.8000.ff00ff')
+    expect(({} as Record<string, unknown>).steps).toBeUndefined()
+    expect(Object.keys(s.drums)).toEqual(Object.keys(defaultSession().drums))
+    expect(s.drums.kick.steps[0]).toBe(true)
+  })
+
   it('falls back to defaults for missing, unknown, or malformed parts', () => {
     expect(decodeSession(null)).toEqual(defaultSession())
     expect(decodeSession('8888080880a2_cc0000cc3300cc00ff_098')).toEqual(defaultSession())
