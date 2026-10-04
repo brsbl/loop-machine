@@ -1,67 +1,29 @@
 import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
 import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 
-export default [
+export default tseslint.config(
+  { ignores: ['dist/**', 'node_modules/**'] },
   js.configs.recommended,
+  ...tseslint.configs.recommended,
   {
-    files: ['**/*.{js,jsx}'],
-    plugins: {
-      react,
-      'react-hooks': reactHooks,
-    },
-    languageOptions: {
-      parserOptions: {
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-      globals: {
-        window: 'readonly',
-        document: 'readonly',
-        console: 'readonly',
-        AudioContext: 'readonly',
-        fetch: 'readonly',
-        requestAnimationFrame: 'readonly',
-        cancelAnimationFrame: 'readonly',
-        setTimeout: 'readonly',
-        clearTimeout: 'readonly',
-        setInterval: 'readonly',
-        clearInterval: 'readonly',
-        URL: 'readonly',
-        URLSearchParams: 'readonly',
-      },
-    },
+    files: ['src/**/*.{ts,tsx}'],
+    plugins: { react, 'react-hooks': reactHooks },
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+    settings: { react: { version: 'detect' } },
     rules: {
-      'react/jsx-uses-react': 'error',
       'react/jsx-uses-vars': 'error',
       'react-hooks/rules-of-hooks': 'error',
       'react-hooks/exhaustive-deps': 'warn',
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-    },
-    settings: {
-      react: {
-        version: 'detect',
-      },
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     },
   },
   {
-    files: ['**/__tests__/**/*.{js,jsx}', '**/*.test.{js,jsx}', '**/*.spec.{js,jsx}'],
-    languageOptions: {
-      globals: {
-        describe: 'readonly',
-        it: 'readonly',
-        expect: 'readonly',
-        jest: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-        global: 'readonly',
-      },
+    // The engine stays framework-free so the web app, Mixtape, and tests can share it.
+    files: ['src/engine/**/*.ts'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [{ group: ['react', 'react-dom', 'react/*'], message: 'The engine must not depend on React.' }] }],
     },
   },
-  {
-    ignores: ['dist/**', 'node_modules/**'],
-  },
-]
+)

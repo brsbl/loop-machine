@@ -1,79 +1,58 @@
-# Loop Machine
+# Loop Machine · LM-919
 
-A browser-based drum sequencer/loop machine built with vanilla JavaScript and the Web Audio API.
-
-<img width="1379" height="868" alt="Screenshot 2026-02-03 at 12 01 15 AM" src="https://github.com/user-attachments/assets/294b555e-6bd5-4b21-b31c-ce46df9f1b31" />
+A drum machine + synth in your browser, styled after the Roland TR-909. Program a beat, hold a chord, and share the whole loop as a link.
 
 ## Features
 
-- **16-step sequencer** with 3 instrument tracks (hi-hat, snare, kick)
-- **Real-time playback** with visual step indicator
-- **Per-instrument effects**: Reverb and Delay with adjustable levels (0-10)
-- **URL state persistence**: Share patterns via URL
-- **JSON editor sidebar**: View and edit sequencer state directly as JSON
-- **Reset functionality**: Clear all patterns and effects with confirmation modal
+- **Drums:** 16-step sequencer for hi-hat, snare, and kick, synthesized 909-style in the browser (no samples), each with volume, reverb, and tone knobs
+- **Synth:** arpeggiator over a two-octave keyboard, with a detuned two-oscillator voice, a sub, and a plucked filter. Keys choose which notes play; the synth's step row chooses when. Direction (up, down, up-down), speed (1/4, 1/8, 1/16), and four waveforms
+- **Playback:** on steps carry a soft tint of their instrument's color and light up fully when they fire; a beat band marks the four beats; the synth's key flashes with its step
+- **Controls:** knobs click to 11 notches and the fader to 9. Drag, click a notch, scroll, or use the arrow keys
+- **Computer keyboard:** A–C and W–\ toggle notes, like a piano layout
+- **Share links:** the URL holds the whole loop, drums and synth included
 
-## Getting Started
+## Run it
 
-### Prerequisites
-
-- A modern web browser with Web Audio API support
-- A local web server (for loading audio samples)
-
-### Running Locally
-
-1. Clone the repository
-2. Serve the directory with any static file server:
-   ```bash
-   npx serve .
-   ```
-3. Open `http://localhost:3000` in your browser
-
-### Audio Samples
-
-The project uses 808 drum samples located in the `808 Samples/` directory:
-- `hi hat (30).wav`
-- `snare.wav`
-- `kick.wav`
-
-## Usage
-
-1. Click **START/STOP** to begin/stop playback
-2. Click on sequencer pads to toggle notes on/off
-3. Adjust **REVERB** and **DELAY** sliders for each instrument
-4. Use the sidebar toggle to open the JSON editor for direct state manipulation
-5. Click **RESET** to clear all patterns (requires confirmation)
-
-## URL State Format
-
-The sequencer state is encoded in the URL using a compact format:
-- `s` parameter: `{notes_hex}_{sliders_chars}`
-  - Notes: 4-character hex per instrument (16 steps as binary)
-  - Sliders: 2 characters per instrument (reverb + delay, 0-9 or 'a' for 10)
-- `sidebar` parameter: `1` if sidebar is visible
-
-## Project Structure
-
-```
-loop-machine/
-├── index.html          # Main HTML structure
-├── script.js           # Core application logic
-├── style.css           # Styling
-├── 808 Samples/        # Drum audio samples
-└── src/
-    └── utils/          # Utility functions
+```bash
+pnpm install
+pnpm dev
 ```
 
-## Tech Stack
+Then open http://localhost:3000.
 
-- Vanilla JavaScript (ES6+)
-- Web Audio API for audio playback and effects
-- CSS Grid for layout
-- No external dependencies
+## Project layout
 
-## Contributing
+```
+src/
+  instruments.ts     registry: drums (id, label, voice, color) and keyboard notes
+  engine/            audio engine, no React: clock, channel strips, reverb, drum voices, synth, arpeggiator
+  session/           session types, commands, store, and share-link format
+  ui/                React components, design tokens, and fonts
+```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines. For bugs or feature requests, please [open an issue](https://github.com/brsbl/loop-machine/issues/new).
+The UI only renders the session and dispatches commands. The engine follows the session and reports the playhead back.
+
+Adding a drum: write its voice in `src/engine/drums.ts`, then add one entry in `src/instruments.ts`:
+
+```ts
+{ id: 'clap', label: 'Clap', voice: 'clap', fire: { top: '…', bottom: '…', glow: '…' } }
+```
+
+Its step row, knobs, firing color, and share-link field follow automatically.
+
+## Scripts
+
+| Command | What it does |
+| --- | --- |
+| `pnpm dev` | Dev server on port 3000 |
+| `pnpm build` | Production build |
+| `pnpm lint` | ESLint |
+| `pnpm typecheck` | TypeScript |
+| `pnpm test` | Vitest |
+
+## Credits
+
+- Fonts: Michroma, Archivo, and DSEG7 Classic, under the SIL Open Font License (see `src/ui/fonts/`)
 
 ## License
 
