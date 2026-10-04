@@ -205,7 +205,8 @@ export function LoopMachine({ store, playhead, isPlaying, onStartStop, onReset }
               </div>
               <div className={transport.control}>
                 <span className="label">{isPlaying ? 'STOP' : 'START'}</span>
-                <button type="button" className={transport.big} aria-label={isPlaying ? 'Stop' : 'Start'} aria-pressed={isPlaying} onClick={onStartStop} />
+                {/* The label already says what the key does next; aria-pressed on top would announce it twice. */}
+                <button type="button" className={transport.big} aria-label={isPlaying ? 'Stop' : 'Start'} data-playing={isPlaying} onClick={onStartStop} />
               </div>
             </div>
           </div>

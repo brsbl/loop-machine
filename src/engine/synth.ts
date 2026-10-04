@@ -29,12 +29,29 @@ const DRIVE = { amount: 1.8, level: 0.8 }
 /** A steep low-pass after the drive shaves off the fizz the saturation adds on top, above the 2–6 kHz presence range. */
 const HIGH_CUT = 7000
 
+/**
+ * The envelope gain `elapsed` seconds after a note starts, from the same
+ * attack and decay segments `noteOn` schedules. Browsers without
+ * `cancelAndHoldAtTime` use it to pin the gain where the envelope has reached.
+ */
+export function envelopeAt(elapsed: number): number {
+  const { attack, decay, sustain } = ENVELOPE
+  if (elapsed <= 0) return 0
+  if (elapsed < attack) return elapsed / attack
+  if (elapsed < attack + decay) return 1 - ((1 - sustain) * (elapsed - attack)) / decay
+  return sustain
+}
+
 export interface Voice {
   /** The unison oscillators, which follow the waveform. */
   unison: OscillatorNode[]
   oscs: OscillatorNode[]
   filter: BiquadFilterNode
   env: GainNode
+  /** When the note starts, on the audio clock. */
+  start: number
+  /** Set once the voice has a release scheduled, so a second release does not restart it. */
+  releasedAt?: number
 }
 
 /** Arp synth voice: stereo unison + sub → plucked low-pass → ADSR → drive → high cut. Voices start and release at scheduled times. */
@@ -122,7 +139,7 @@ export class Synth {
     unison.forEach((o) => o.start(time + Math.random() / frequency))
     sub.start(time)
 
-    const voice = { unison, oscs, filter, env }
+    const voice: Voice = { unison, oscs, filter, env, start: time }
     this.voices.add(voice)
     oscs[0].onended = () => {
       this.voices.delete(voice)
@@ -133,15 +150,30 @@ export class Synth {
 
   /** Releases at `time`, the moment the next note starts, not when it was scheduled. */
   release(voice: Voice, time: number): void {
+    // An earlier release already covers this one: the decay continues on the same curve.
+    if (voice.releasedAt !== undefined && voice.releasedAt <= time) return
     const gain = voice.env.gain
     if (typeof gain.cancelAndHoldAtTime === 'function') gain.cancelAndHoldAtTime(time)
-    else gain.cancelScheduledValues(time)
+    else {
+      // Without cancelAndHoldAtTime, cancelling drops the in-progress decay ramp and the gain snaps back to 1, so pin it where the envelope has reached.
+      gain.cancelScheduledValues(time)
+      gain.setValueAtTime(envelopeAt(time - voice.start), time)
+    }
     gain.setTargetAtTime(0, time, ENVELOPE.release / 4)
+    voice.releasedAt = time
     voice.oscs.forEach((o) => o.stop(time + ENVELOPE.release + 0.05))
   }
 
+  /** Lets sounding notes fade; notes that have not started yet are cancelled outright. */
   releaseAll(): void {
     const now = this.ctx.currentTime
-    for (const v of this.voices) this.release(v, now)
+    for (const v of this.voices) {
+      if (v.start > now) {
+        // Cancelling a gain whose events all lie ahead holds its default of 1, a blip, so stop the voice before it starts instead.
+        v.oscs.forEach((o) => o.stop(now))
+        v.env.disconnect()
+        this.voices.delete(v)
+      } else this.release(v, now)
+    }
   }
 }

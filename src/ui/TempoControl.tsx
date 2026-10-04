@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { ArrowKey } from './controls/LedButton'
 import styles from './Transport.module.css'
 
@@ -11,9 +11,13 @@ interface TempoControlProps {
 export function TempoControl({ bpm, onChange }: TempoControlProps) {
   const [draft, setDraft] = useState<string | null>(null)
   const shown = draft ?? String(bpm).padStart(3, '0')
+  // Escape blurs the field, and blur commits; this tells that commit to drop the draft instead.
+  const cancelled = useRef(false)
 
   const commit = () => {
-    if (draft !== null) {
+    const cancel = cancelled.current
+    cancelled.current = false
+    if (draft !== null && !cancel) {
       const parsed = parseInt(draft, 10)
       if (!Number.isNaN(parsed)) onChange(parsed)
     }
@@ -38,7 +42,7 @@ export function TempoControl({ bpm, onChange }: TempoControlProps) {
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.currentTarget.blur()
             if (e.key === 'Escape') {
-              setDraft(null)
+              cancelled.current = true
               e.currentTarget.blur()
             }
           }}

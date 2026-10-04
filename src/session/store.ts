@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { applyCommand, type Command } from './commands'
 import type { Session } from './schema'
+import { encodeSession } from './url'
 
 export interface SessionStore {
   getState(): Session
@@ -41,7 +42,8 @@ export function createSessionStore(initial: Session, now: () => number = Date.no
     getState: () => state,
     dispatch(command) {
       const next = applyCommand(state, command)
-      if (next === state) return
+      // The link carries the whole session, so an unchanged link means nothing changed: no undo step, no rewrite.
+      if (next === state || encodeSession(next) === encodeSession(state)) return
       const key = continuousKey(command)
       const at = now()
       const continuing = key !== null && last?.key === key && at - last.at < COALESCE_MS

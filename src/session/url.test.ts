@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { applyCommand } from './commands'
 import { defaultSession } from './schema'
-import { decodeSession, encodeSession } from './url'
+import { decodeSession, encodeSession, writeSessionToLocation } from './url'
 
 describe('share link', () => {
   it('round-trips drums, tempo, and the full synth', () => {
@@ -85,5 +85,28 @@ describe('share link', () => {
     expect(s.synth.steps.every(Boolean)).toBe(true)
     expect(s.synth.notes).toEqual([])
     expect(s.synth.mode).toBe('up')
+  })
+
+  it('keeps the default tempo when the tempo field is empty or not plain digits', () => {
+    expect(decodeSession('2~~').bpm).toBe(120)
+    expect(decodeSession('2~0x7f').bpm).toBe(120)
+    expect(decodeSession('2~1e2').bpm).toBe(120)
+    expect(decodeSession('2~098').bpm).toBe(98)
+  })
+})
+
+describe('writing the link', () => {
+  afterEach(() => vi.restoreAllMocks())
+
+  it('swallows the error browsers throw when address rewrites are rate-limited', () => {
+    vi.spyOn(window.history, 'replaceState').mockImplementation(() => {
+      throw new DOMException('Too many calls to history APIs', 'SecurityError')
+    })
+    expect(() => writeSessionToLocation(defaultSession())).not.toThrow()
+  })
+
+  it('puts the session in the address bar', () => {
+    writeSessionToLocation(defaultSession())
+    expect(new URLSearchParams(window.location.search).get('s')).toBe(encodeSession(defaultSession()))
   })
 })

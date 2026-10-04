@@ -21,7 +21,7 @@ export interface Mixer {
  *   synth ────────────────────────────┼→ pump ──┴→ mix bus → limiter → out
  *     └ reverb send → reverb ─────────┘
  *
- * Shared by the live engine and offline renders, so both hear the same thing.
+ * The engine builds it once per audio context.
  */
 export function buildMixer(ctx: BaseAudioContext, drums: readonly DrumDefinition[]): Mixer {
   const limiter = ctx.createDynamicsCompressor()

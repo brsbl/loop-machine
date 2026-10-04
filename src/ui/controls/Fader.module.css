@@ -8,6 +8,9 @@
   cursor: ns-resize;
   outline: none;
   touch-action: none;
+  /* A mouse drag starts here; without this it selects the labels it sweeps over. */
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .fader::before {

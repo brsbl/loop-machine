@@ -1,5 +1,7 @@
 # Loop Machine Style Guide Implementation Roadmap
 
+> **Superseded.** This plan predates the LM-919 rewrite (TypeScript, CSS Modules, no Tailwind). See `README.md` and `.claude/CLAUDE.md` for the current stack and design.
+
 ## Overview
 
 This roadmap outlines the implementation strategy for transforming the Loop Machine into a fully polished, accessible, and responsive application based on **The 1984 Digital Control System** documented in `./design/DESIGN_SYSTEM.md`.

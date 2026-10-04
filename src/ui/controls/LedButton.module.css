@@ -55,11 +55,11 @@
   outline: none;
 }
 
-.button:disabled {
+.button[aria-disabled='true'] {
   cursor: default;
 }
 
-.button:disabled .face {
+.button[aria-disabled='true'] .face {
   opacity: 0.45;
 }
 

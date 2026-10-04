@@ -43,20 +43,35 @@ function envelope(ctx: BaseAudioContext, time: number, peak: number, decay: numb
   return g
 }
 
-/**
- * A gain into `out` that the next hit in the same group cuts off at its start
- * time, like the 808's kick or a hi-hat pedal closing an open hat.
- */
-function choked(ctx: BaseAudioContext, out: AudioNode, time: number, group: WeakMap<AudioNode, GainNode>): GainNode {
-  group.get(out)?.gain.setTargetAtTime(0, time, 0.008)
-  const gain = ctx.createGain()
-  gain.connect(out)
-  group.set(out, gain)
-  return gain
+type Source = AudioScheduledSourceNode
+
+/** The latest hit of a choke group: its gain, and the sources feeding it so the next hit can stop them. */
+interface Choke {
+  gain: GainNode
+  sources: Source[]
 }
 
-const lastKick = new WeakMap<AudioNode, GainNode>()
-const lastHat = new WeakMap<AudioNode, GainNode>()
+/**
+ * A gain into `out` that the next hit in the same group cuts off at its start
+ * time, like the 808's kick or a hi-hat pedal closing an open hat. Once the
+ * gain has faded the old hit's sources are silent, so they are stopped too
+ * instead of running out their full tail (several seconds at long DECAY).
+ */
+function choked(ctx: BaseAudioContext, out: AudioNode, time: number, group: WeakMap<AudioNode, Choke>): Choke {
+  const previous = group.get(out)
+  if (previous) {
+    previous.gain.gain.setTargetAtTime(0, time, 0.008)
+    previous.sources.forEach((src) => src.stop(time + 0.05))
+  }
+  const gain = ctx.createGain()
+  gain.connect(out)
+  const choke: Choke = { gain, sources: [] }
+  group.set(out, choke)
+  return choke
+}
+
+const lastKick = new WeakMap<AudioNode, Choke>()
+const lastHat = new WeakMap<AudioNode, Choke>()
 
 /**
  * 808 kick: a sine that drops 110 → 52 Hz in 50 ms, then sags toward 45 Hz
@@ -64,8 +79,9 @@ const lastHat = new WeakMap<AudioNode, GainNode>()
  * in 25 ms) and a noise tick give the attack its punch. Light saturation adds
  * harmonics so the low end carries on small speakers without losing its roundness.
  */
-function kick(ctx: BaseAudioContext, out: AudioNode, time: number, length: number): void {
-  const dirt = drive(ctx, choked(ctx, out, time, lastKick), 2.5, 0.95)
+function kick(ctx: BaseAudioContext, out: AudioNode, time: number, length: number): Source[] {
+  const choke = choked(ctx, out, time, lastKick)
+  const dirt = drive(ctx, choke.gain, 2.5, 0.95)
 
   const body = ctx.createOscillator()
   body.frequency.setValueAtTime(110, time)
@@ -87,11 +103,14 @@ function kick(ctx: BaseAudioContext, out: AudioNode, time: number, length: numbe
   bp.type = 'bandpass'
   bp.frequency.value = 2500
   click.connect(bp).connect(envelope(ctx, time, 0.25, 0.006)).connect(dirt)
+  choke.sources = [body, snap, click]
+  return choke.sources
 }
 
 /** Two low pitched shells under a thick noise snap, driven for a crunchy hit. */
-function snare(ctx: BaseAudioContext, out: AudioNode, time: number, length: number): void {
+function snare(ctx: BaseAudioContext, out: AudioNode, time: number, length: number): Source[] {
   const dirt = drive(ctx, out, 2.2, 0.75)
+  const sources: Source[] = []
 
   for (const [start, end, level] of [
     [200, 160, 0.35],
@@ -104,6 +123,7 @@ function snare(ctx: BaseAudioContext, out: AudioNode, time: number, length: numb
     shell.connect(envelope(ctx, time, level, 0.15 * length)).connect(dirt)
     shell.start(time)
     shell.stop(time + 0.15 * length + 0.1)
+    sources.push(shell)
   }
 
   const snap = noiseSource(ctx, time, 0.28 * length + 0.07)
@@ -115,6 +135,8 @@ function snare(ctx: BaseAudioContext, out: AudioNode, time: number, length: numb
   peak.frequency.value = 3500
   peak.gain.value = 5
   snap.connect(hp).connect(peak).connect(envelope(ctx, time, 0.45, 0.28 * length)).connect(dirt)
+  sources.push(snap)
+  return sources
 }
 
 /**
@@ -124,9 +146,10 @@ function snare(ctx: BaseAudioContext, out: AudioNode, time: number, length: numb
  */
 const HAT_RATIOS = [2, 3, 4.16, 5.43, 6.79, 8.21]
 
-function hihat(ctx: BaseAudioContext, out: AudioNode, time: number, length: number): void {
+function hihat(ctx: BaseAudioContext, out: AudioNode, time: number, length: number): Source[] {
   const mix = ctx.createGain()
   mix.gain.value = 0.45
+  const sources: Source[] = []
   for (const ratio of HAT_RATIOS) {
     const osc = ctx.createOscillator()
     osc.type = 'square'
@@ -134,8 +157,10 @@ function hihat(ctx: BaseAudioContext, out: AudioNode, time: number, length: numb
     osc.connect(mix)
     osc.start(time)
     osc.stop(time + 0.6 * length + 0.1)
+    sources.push(osc)
   }
   const air = noiseSource(ctx, time, 0.6 * length + 0.1)
+  sources.push(air)
   const airLevel = ctx.createGain()
   airLevel.gain.value = 0.7
   air.connect(airLevel).connect(mix)
@@ -148,16 +173,20 @@ function hihat(ctx: BaseAudioContext, out: AudioNode, time: number, length: numb
   hp.type = 'highpass'
   hp.frequency.value = 7000
   // Left clean: driving the hat's highs only adds grain.
-  mix.connect(bp).connect(hp).connect(envelope(ctx, time, 0.75, 0.6 * length, 0.002)).connect(choked(ctx, out, time, lastHat))
+  const choke = choked(ctx, out, time, lastHat)
+  mix.connect(bp).connect(hp).connect(envelope(ctx, time, 0.75, 0.6 * length, 0.002)).connect(choke.gain)
+  choke.sources = sources
+  return sources
 }
 
-type Voice = (ctx: BaseAudioContext, out: AudioNode, time: number, length: number) => void
+type Voice = (ctx: BaseAudioContext, out: AudioNode, time: number, length: number) => Source[]
 
 const VOICES: Record<DrumVoice, Voice> = { kick, snare, hihat }
 
 /** DECAY 0–1 to a tail multiplier: ¼× (tight, a closed hat) through 1× at center to 4× (long, a washy open hat). */
 export const decayLength = (decay: number): number => 2 ** (4 * decay - 2)
 
-export function playDrum(voice: DrumVoice, ctx: BaseAudioContext, out: AudioNode, time: number, decay = 0.5): void {
-  VOICES[voice](ctx, out, time, decayLength(decay))
+/** Schedules one hit and returns its sources, so a Stop can cancel the ones that have not started yet. */
+export function playDrum(voice: DrumVoice, ctx: BaseAudioContext, out: AudioNode, time: number, decay = 0.5): Source[] {
+  return VOICES[voice](ctx, out, time, decayLength(decay))
 }

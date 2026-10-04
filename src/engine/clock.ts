@@ -7,6 +7,17 @@ export const TICK_MS = 25
 export const stepSeconds = (bpm: number): number => 60 / bpm / 4
 
 /**
+ * Where the grid resumes when the scheduler wakes up late (the main thread
+ * stalled). Steps whose time has already passed are skipped, not played
+ * stacked on top of each other in the past: a stall leaves a gap.
+ */
+export function catchUp(step: number, nextTime: number, now: number, secondsPerStep: number): { step: number; nextTime: number } {
+  if (nextTime >= now) return { step, nextTime }
+  const missed = Math.ceil((now - nextTime) / secondsPerStep)
+  return { step: (step + missed) % STEPS, nextTime: nextTime + missed * secondsPerStep }
+}
+
+/**
  * Lookahead scheduler. A Worker drives the tick so playback stays steady when
  * the tab is in the background, where main-thread timers are throttled.
  */
@@ -39,7 +50,11 @@ export class Clock {
   }
 
   private readonly tick = (): void => {
-    const horizon = this.ctx.currentTime + LOOKAHEAD
+    const now = this.ctx.currentTime
+    const resumed = catchUp(this.step, this.nextTime, now, this.secondsPerStep())
+    this.step = resumed.step
+    this.nextTime = resumed.nextTime
+    const horizon = now + LOOKAHEAD
     while (this.nextTime < horizon) {
       this.onStep(this.step, this.nextTime)
       this.nextTime += this.secondsPerStep()
@@ -56,6 +71,8 @@ function startTicker(tick: () => void): { stop(): void } {
       worker.onmessage = tick
       return {
         stop() {
+          // A message already queued must not tick a stopped clock.
+          worker.onmessage = null
           worker.terminate()
           URL.revokeObjectURL(url)
         },

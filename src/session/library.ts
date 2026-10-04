@@ -1,3 +1,5 @@
+import type { ArpRate } from './schema'
+
 /**
  * Starting material for exploring: ready-made loops and chords that work
  * together. Everything here sits in house music (four-on-the-floor, claps on
@@ -33,6 +35,16 @@ const toSteps = (on: readonly number[]): boolean[] => Array.from({ length: 16 },
 
 /** The synth's steps when you first hold a key with none set: off-beat stabs, so the keyboard always answers. */
 export const DEFAULT_GATE: readonly boolean[] = toSteps([3, 7, 11, 15])
+
+/** At 1/4 the arp only sounds on the beat, where off-beat stabs never land, so it gets the four beats instead. */
+const QUARTER_GATE: readonly boolean[] = toSteps([1, 5, 9, 13])
+
+/** The gate to fill in at each SPEED, so the first held key sounds at any rate. */
+export const DEFAULT_GATES: Readonly<Record<ArpRate, readonly boolean[]>> = {
+  '1/4': QUARTER_GATE,
+  '1/8': DEFAULT_GATE,
+  '1/16': DEFAULT_GATE,
+}
 
 const sameNotes = (a: readonly string[], b: readonly string[]) => a.length === b.length && a.every((n, i) => n === b[i])
 

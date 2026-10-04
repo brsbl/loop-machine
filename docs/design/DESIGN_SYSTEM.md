@@ -1,5 +1,7 @@
 # The 1984 Digital Control System
 
+> **Superseded.** This plan predates the LM-919 rewrite (TypeScript, CSS Modules, no Tailwind). See `README.md` and `.claude/CLAUDE.md` for the current stack and design.
+
 A unified design language for retro-inspired musical interfaces—drum machines, synth modules, sequencers, and hybrid workstations. It blends the visual DNA of Roland TR-707, Oberheim OB-series, and early digital lab equipment into a clean, modern, production-ready UI system.
 
 ![1984 Digital Control System](./1984-digital-control-system.png)

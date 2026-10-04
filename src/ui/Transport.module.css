@@ -97,6 +97,6 @@
   outline-offset: 2px;
 }
 
-.big[aria-pressed='true'] {
+.big[data-playing='true'] {
   background: linear-gradient(#f2a587, #d9744f);
 }

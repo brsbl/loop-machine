@@ -1,5 +1,7 @@
 # Tech Stack Evaluation
 
+> **Superseded.** This plan predates the LM-919 rewrite (TypeScript, CSS Modules, no Tailwind). See `README.md` and `.claude/CLAUDE.md` for the current stack and design.
+
 ## Current Stack
 | Layer | Choice | Status |
 |-------|--------|--------|
