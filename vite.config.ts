@@ -6,7 +6,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
-    // Browser tests in e2e/ run in real Chrome through Playwright, not here.
-    exclude: [...configDefaults.exclude, 'e2e/**'],
+    // Browser tests in e2e/ (Playwright) and audio renders (*.audio.test.ts, vitest.audio.config.ts) run in real Chrome, not here.
+    exclude: [...configDefaults.exclude, 'e2e/**', '**/*.audio.test.ts'],
   },
 })
