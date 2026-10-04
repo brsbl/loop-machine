@@ -1,0 +1,101 @@
+/* LM-919 design tokens. TR-909 identity pieces, modern surfaces. */
+
+@font-face {
+  font-family: 'Michroma';
+  src: url('./fonts/Michroma.woff2') format('woff2');
+  font-weight: 400;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'Archivo';
+  src: url('./fonts/Archivo.woff2') format('woff2');
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: block;
+}
+
+@font-face {
+  font-family: 'DSEG7';
+  src: url('./fonts/DSEG7Classic-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: block;
+}
+
+:root {
+  --navy: #2c3a5e;
+  --label: #24315a;
+  --orange: #e8622a;
+  --ink: #1f2124;
+  --bezel: #34363a;
+  --muted: #9a9ea8;
+
+  --glass: rgba(250, 248, 243, 0.72);
+  --well: rgba(44, 58, 94, 0.055);
+  --well-line: rgba(44, 58, 94, 0.12);
+  --hair: rgba(31, 33, 36, 0.14);
+
+  --key-face: linear-gradient(#fdfbf6, #f1ebde);
+  /* Matte paint grain for key and pad surfaces. */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.22 0 0 0 0 0.19 0 0 0 0 0.15 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23g)'/%3E%3C/svg%3E");
+  --key-shadow: 0 1px 2px rgba(31, 33, 36, 0.08), inset 0 -1px 0 rgba(31, 33, 36, 0.05);
+
+  --led-off: #6b2420;
+  --led-red: #ff3b2a;
+  --led-amber: #ff9a3c;
+
+  --font-nameplate: 'Michroma', sans-serif;
+  --font-label: 'Archivo', -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --font-led: 'DSEG7', monospace;
+
+  --fade: 0.22s ease-out;
+  --flash: 0.04s;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 30px 24px;
+  font-family: var(--font-label);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(900px 520px at 12% 8%, #f6dccb 0, transparent 60%),
+    radial-gradient(800px 600px at 92% 95%, #cfd9ee 0, transparent 60%),
+    radial-gradient(700px 500px at 70% 10%, #efe7d6 0, transparent 65%),
+    #e9e5dc;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+/* Panel label: navy expanded caps. */
+.label {
+  font: 800 11.5px/1 var(--font-label);
+  font-stretch: 108%;
+  letter-spacing: 0.08em;
+  color: var(--label);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}

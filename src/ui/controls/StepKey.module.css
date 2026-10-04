@@ -1,0 +1,109 @@
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+
+.led {
+  width: 14px;
+  height: 4px;
+  border-radius: 3px;
+  background: var(--led-off);
+  box-shadow: inset 0 1px 1px #0006;
+}
+
+.step[aria-pressed='true'] .led {
+  background: var(--led-red);
+  box-shadow:
+    0 0 6px var(--led-red),
+    inset 0 1px 0 #fff6;
+}
+
+.synth[aria-pressed='true'] .led {
+  background: var(--led-amber);
+  box-shadow:
+    0 0 6px var(--led-amber),
+    inset 0 1px 0 #fff6;
+}
+
+.key {
+  /* Glossy molded plastic: cream face, thin dark ring, soft backlight when on. */
+  --ring:
+    0 0 0 1px rgba(42, 44, 47, 0.5),
+    0 1px 2px rgba(0, 0, 0, 0.18);
+  /* The plastic's shine: a bright reflection over the top half with a crisp lower edge, like light on a glossy molding. */
+  --sheen: linear-gradient(rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.3) 40%, rgba(255, 255, 255, 0.05) 47%, rgba(255, 255, 255, 0) 60%);
+  /* Molded edges: a crisp highlight along the top, a faint rim, and shade where the face curves away at the bottom. */
+  --mold:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 -3px 4px rgba(0, 0, 0, 0.12);
+  display: block;
+  width: 100%;
+  height: 42px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--sheen), linear-gradient(#f2eee6, #ded9cf);
+  box-shadow:
+    var(--ring),
+    var(--mold);
+  transition:
+    background var(--fade),
+    box-shadow var(--fade),
+    transform var(--fade);
+}
+
+/* On: a soft, calm version of the row's firing color, so on and firing read as one color at two strengths. The key sits a little pressed in. */
+.step[aria-pressed='true'] .key {
+  transform: translateY(1px);
+  background:
+    var(--sheen),
+    linear-gradient(color-mix(in oklab, var(--fire-top) 50%, #ece6da), color-mix(in oklab, var(--fire-bottom) 50%, #dcd4c3));
+  box-shadow:
+    0 0 0 1px rgba(42, 44, 47, 0.5),
+    0 0 1px rgba(0, 0, 0, 0.18),
+    inset 0 2px 3px rgba(0, 0, 0, 0.14),
+    var(--mold);
+}
+
+.step:focus-visible {
+  outline: none;
+}
+
+.step:focus-visible .key {
+  outline: 2px solid var(--navy);
+  outline-offset: 3px;
+}
+
+/* Playhead: a faint cool shade on keys that are off… */
+.now .key {
+  background:
+    var(--sheen),
+    linear-gradient(#efefed, #dddddb);
+  transition-duration: var(--flash);
+}
+
+/* …and keys that are on fire glow evenly through the plastic, like a backlit pad: saturated, barely brighter at the center, light held close. */
+.now[aria-pressed='true'] .key {
+  background:
+    var(--sheen),
+    radial-gradient(
+      ellipse 95% 90% at 50% 45%,
+      color-mix(in oklab, var(--fire-top) 68%, #fff8ec) 0%,
+      color-mix(in oklab, var(--fire-top) 88%, #fff8ec) 40%,
+      var(--fire-top) 70%,
+      color-mix(in oklab, var(--fire-top) 55%, var(--fire-bottom)) 100%
+    );
+  box-shadow:
+    var(--ring),
+    0 0 4px rgba(var(--fire-glow), 0.7),
+    0 0 16px 3px rgba(var(--fire-glow), 0.38),
+    inset 0 0 9px rgba(var(--fire-glow), 0.4),
+    var(--mold);
+  transition-duration: var(--flash);
+}

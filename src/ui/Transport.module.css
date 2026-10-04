@@ -1,0 +1,102 @@
+.panel {
+  grid-column: 3;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 12px;
+  border: 1px solid rgba(44, 58, 94, 0.07);
+  border-radius: 16px;
+  background: rgba(44, 58, 94, 0.025);
+}
+
+.tempo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.window {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 8px 10px;
+  border-radius: 3px;
+  background: #2a0b0a;
+  box-shadow:
+    inset 0 2px 8px #000,
+    0 0 0 2px var(--ink);
+  cursor: text;
+}
+
+.ghost,
+.digits {
+  font: 700 26px/1 var(--font-led);
+}
+
+.ghost {
+  color: #3d1513;
+}
+
+.digits {
+  position: absolute;
+  right: 10px;
+  width: 3.2em;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--led-red);
+  text-align: right;
+  text-shadow: 0 0 8px #ff3b2a99;
+  caret-color: var(--led-red);
+  outline: none;
+}
+
+.digits::selection {
+  background: #ff3b2a40;
+}
+
+.arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.keys {
+  display: flex;
+  gap: 14px;
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.big {
+  width: 52px;
+  height: 44px;
+  border: 1px solid var(--hair);
+  border-radius: 10px;
+  background: var(--key-face);
+  box-shadow:
+    0 1px 2px rgba(31, 33, 36, 0.1),
+    inset 0 -1px 0 rgba(31, 33, 36, 0.05);
+}
+
+.big:active {
+  box-shadow: inset 0 1px 2px rgba(31, 33, 36, 0.15);
+}
+
+.big:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
+.big[aria-pressed='true'] {
+  background: linear-gradient(#f2a587, #d9744f);
+}

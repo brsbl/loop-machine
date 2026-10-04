@@ -1,0 +1,206 @@
+/* Glass housing over the wallpaper; the panel inside carries the 909 layout. */
+/* Polished-chrome housing frame, as on the original direction A, around the matte panel. */
+.device {
+  width: 1128px;
+  padding: 8px;
+  border-radius: 20px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.12)),
+    linear-gradient(90deg, #b9bcbf, #eef0f1 12%, #c9ccce 30%, #f6f7f8 50%, #c3c6c9 70%, #eceeef 88%, #b3b6b9);
+  box-shadow:
+    0 30px 60px -28px rgba(32, 38, 56, 0.45),
+    0 2px 6px rgba(32, 38, 56, 0.12),
+    0 0 0 1px rgba(32, 38, 56, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+
+.face {
+  padding: 22px 28px 26px;
+  border-radius: 13px;
+  background: #f7f4ee;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+/* Nameplate on the left; the global pattern and undo keys on the right, like the 909's pattern section. */
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+/* "DRUM MACHINE + SYNTH" is sized to run exactly as wide as "LM-919". */
+.nameplate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.globals {
+  display: flex;
+  align-items: flex-start;
+  gap: 22px;
+}
+
+.pattern {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The loaded pattern's name, or "Your loop" once you change it. */
+.patternName {
+  font: 600 10px/1 var(--font-label);
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* Undo has no LED, so its key sits level with the pattern keys below their LEDs. */
+.undo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.descriptor {
+  font: 400 9.5px/1 var(--font-nameplate);
+  letter-spacing: 0.16em;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+/* Carved into the panel and paint-filled; see the "carved" filter in LoopMachine.tsx. */
+.model {
+  margin: 0;
+  font: 400 34.53px/1 var(--font-nameplate);
+  letter-spacing: 0.05em;
+  color: var(--navy);
+  white-space: nowrap;
+  filter: url(#carved);
+}
+
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.cols {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr) 190px;
+  column-gap: 30px;
+  row-gap: 8px;
+  align-items: center;
+}
+
+.seq {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 14px;
+}
+
+.group {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 6px;
+}
+
+/* 909-style beat band: one segment per beat, aligned with each group of four steps. */
+.beats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 14px;
+}
+
+.beat {
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(44, 58, 94, 0.14);
+  transition: background var(--fade);
+}
+
+.beatNow {
+  background: var(--orange);
+  transition-duration: var(--flash);
+}
+
+.num {
+  font: 700 11px/1 var(--font-label);
+  color: var(--navy);
+  text-align: center;
+}
+
+.numNow {
+  color: var(--orange);
+}
+
+/* Labels and knobs sit level with the pads, not with the LED strip above them. */
+.rowLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  margin-top: 9px;
+}
+
+.mix {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  transform: translateY(4.5px);
+}
+
+.lower {
+  margin-top: 22px;
+  align-items: stretch;
+}
+
+.faderColumn {
+  grid-column: 1;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+/* The synth's inset panel; negative margins keep its steps the same width as the drums'. */
+.synth {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 -13px;
+  padding: 12px;
+  border: 1px solid var(--well-line);
+  border-radius: 16px;
+  background: var(--well);
+}
+
+.controls {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+  margin-top: 14px;
+}
+
+.chordRow {
+  grid-column: 2;
+  grid-row: 3;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}

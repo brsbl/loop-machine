@@ -12,16 +12,17 @@ Thanks for your interest in contributing to Loop Machine!
 ```bash
 git clone https://github.com/brsbl/loop-machine.git
 cd loop-machine
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 ## Before Submitting a PR
 
 ```bash
-npm run lint
-npm test
-npm run build
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
 ```
 
 All checks must pass before merging.
