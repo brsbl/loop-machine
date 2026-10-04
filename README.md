@@ -2,12 +2,16 @@
 
 A drum machine + synth in your browser, styled after the Roland TR-909. Program a beat, hold a chord, and share the whole loop as a link.
 
+![The LM-919 panel: three drum rows with knobs, the synth's step row over a two-octave keyboard, tempo display, and pattern, chord, and undo keys](docs/images/lm-919.png)
+
 ## Features
 
 - **Drums:** 16-step sequencer for an 808 kick, a 909 snare, and a disco open hat, synthesized in the browser (no samples), each with volume, delay, and decay knobs
 - **Synth:** arpeggiator over a two-octave keyboard, with a seven-voice detuned stereo unison, a sub, and a plucked filter. Keys choose which notes play; the synth's step row chooses when. Direction (up, down, up-down), speed (1/4, 1/8, 1/16), four waveforms, octave, and chord keys
 - **Exploring:** six house patterns to start from, and undo (⌘Z / Ctrl+Z) for every change
 - **Playback:** on steps carry a soft tint of their instrument's color and light up fully when they fire; a beat band marks the four beats; the note playing lights its key's LED
+
+  ![Step 5 firing: the snare and kick keys light up in their colors](docs/images/lm-919-playing.png)
 - **Controls:** knobs click to 11 notches and the fader to 9. Drag, click a notch, scroll, or use the arrow keys
 - **Computer keyboard:** A–C and W–\ toggle notes, like a piano layout
 - **Share links:** the URL holds the whole loop, drums and synth included
