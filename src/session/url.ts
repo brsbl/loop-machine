@@ -75,23 +75,28 @@ export function encodeSession(session: Session): string {
 }
 
 /**
- * Links from the previous app: `<steps>_<knobs>[_<bpm>]`, 4 hex of steps and
- * 6 hex of knobs (volume, reverb, filter) per drum, in this drum order.
+ * Links from earlier versions of the app: `<steps>_<knobs>[_<bpm>]`, 4 hex of
+ * steps per drum in this drum order. The knob part changed over time; only the
+ * last layout (6 hex per drum: volume, reverb, filter) carries volumes we can read.
  */
-const V1_LINK = /^([0-9a-f]{12})_([0-9a-f]{18})(?:_(\d{1,3}))?$/i
-const V1_DRUMS = ['hihat', 'snare', 'kick']
+const LEGACY_STEPS = /^[0-9a-f]{12}$/i
+const LEGACY_KNOBS = /^[0-9a-f]{18}$/i
+const LEGACY_DRUMS = ['hihat', 'snare', 'kick']
 
-/** Keeps old shared beats playing: their steps, volumes, and tempo carry over. Reverb and filter have no equivalent and stay at defaults. */
-function decodeV1(match: RegExpExecArray): Session {
+/** Keeps old shared beats playing, as the previous app did: steps always, volumes and tempo when present. Other knobs stay at defaults. */
+function decodeLegacy(payload: string): Session | null {
+  if (payload.includes('~')) return null
+  const [steps, knobs = '', bpm] = payload.split('_')
+  if (!LEGACY_STEPS.test(steps)) return null
   const session = defaultSession()
-  const [, steps, knobs, bpm] = match
-  V1_DRUMS.forEach((id, i) => {
+  const volumes = LEGACY_KNOBS.test(knobs)
+  LEGACY_DRUMS.forEach((id, i) => {
     if (!Object.hasOwn(session.drums, id)) return
     const track = session.drums[id]
     track.steps = hexToBits(steps.slice(i * 4, i * 4 + 4), STEPS) ?? track.steps
-    track.volume = hexByte(knobs.slice(i * 6, i * 6 + 2)) ?? track.volume
+    if (volumes) track.volume = hexByte(knobs.slice(i * 6, i * 6 + 2)) ?? track.volume
   })
-  if (bpm) session.bpm = clampBpm(Number(bpm))
+  if (bpm && /^\d{3}$/.test(bpm)) session.bpm = clampBpm(Number(bpm))
   return session
 }
 
@@ -99,8 +104,8 @@ function decodeV1(match: RegExpExecArray): Session {
 export function decodeSession(payload: string | null): Session {
   const session = defaultSession()
   if (!payload) return session
-  const v1 = V1_LINK.exec(payload)
-  if (v1) return decodeV1(v1)
+  const legacy = decodeLegacy(payload)
+  if (legacy) return legacy
   const [version, bpm, ...parts] = payload.split('~')
   if (version !== LINK_VERSION) return session
 

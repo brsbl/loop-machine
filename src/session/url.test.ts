@@ -67,6 +67,15 @@ describe('share link', () => {
     expect(decodeSession('888800000000_cc00ffcc00ffcc00ff').bpm).toBe(120)
   })
 
+  it('plays links from the older one-digit knob format, keeping default volumes', () => {
+    const s = decodeSession('8888080880a2_000500')
+    const on = (steps: boolean[]) => steps.flatMap((v, i) => (v ? [i] : []))
+    expect(on(s.drums.hihat.steps)).toEqual([0, 4, 8, 12])
+    expect(on(s.drums.kick.steps)).toEqual([0, 8, 10, 14])
+    expect(s.drums.hihat.volume).toBe(defaultSession().drums.hihat.volume)
+    expect(s.bpm).toBe(120)
+  })
+
   it('falls back to defaults for missing, unknown, or malformed parts', () => {
     expect(decodeSession(null)).toEqual(defaultSession())
     expect(decodeSession('8888_cc00ff_098')).toEqual(defaultSession())
