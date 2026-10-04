@@ -78,6 +78,13 @@ body {
     #e9e5dc;
 }
 
+/* Phones show the compact player; give it most of the width. */
+@media (max-width: 700px) {
+  body {
+    padding: 16px 12px;
+  }
+}
+
 button {
   font: inherit;
   cursor: pointer;

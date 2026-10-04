@@ -46,6 +46,9 @@ export class Engine {
   load(): void {
     if (this.graph) return
     const ctx = new AudioContext()
+    // Safari on iPhone silences Web Audio with the ring/silent switch unless the page says it plays media.
+    const audioSession = (navigator as Navigator & { audioSession?: { type: string } }).audioSession
+    if (audioSession) audioSession.type = 'playback'
     const graph: Graph = {
       ctx,
       ...buildMixer(ctx, this.drums),

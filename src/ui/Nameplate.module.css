@@ -1,0 +1,30 @@
+/* "DRUM MACHINE + SYNTH" is sized to run exactly as wide as "LM-919". */
+.nameplate {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.descriptor {
+  font: 400 9.5px/1 var(--font-nameplate);
+  letter-spacing: 0.16em;
+  color: var(--navy);
+  white-space: nowrap;
+}
+
+/* Carved into the panel and paint-filled; see the "carved" filter in Nameplate.tsx. */
+.model {
+  margin: 0;
+  font: 400 34.53px/1 var(--font-nameplate);
+  letter-spacing: 0.05em;
+  color: var(--navy);
+  white-space: nowrap;
+  filter: url(#carved);
+}
+
+.defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}

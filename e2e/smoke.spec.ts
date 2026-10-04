@@ -73,3 +73,25 @@ test('undo steps back a change', async ({ page }) => {
   await page.keyboard.press('ControlOrMeta+Z')
   await expect(step).toHaveAttribute('aria-pressed', 'false')
 })
+
+test.describe('on a phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
+
+  test('shows a listening player that plays and switches loops', async ({ page }) => {
+    const errors = collectErrors(page)
+    await page.goto('/')
+    await expect(page.getByRole('button', { name: 'KICK step 1', exact: true })).toHaveCount(0)
+    await expect(page.getByText('Deep Night')).toBeVisible()
+
+    await page.getByRole('button', { name: 'START' }).tap()
+    await expect(page.getByRole('button', { name: 'STOP' })).toBeVisible()
+    await expect(page.locator('[data-now="true"]').first()).toBeAttached()
+    await page.getByRole('button', { name: 'STOP' }).tap()
+    await expect(page.locator('[data-now="true"]')).toHaveCount(0)
+
+    await page.getByRole('radio', { name: 'Warehouse' }).tap()
+    await expect(page.getByText('Warehouse')).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+    expect(errors).toEqual([])
+  })
+})

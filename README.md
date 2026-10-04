@@ -11,6 +11,7 @@ A drum machine + synth in your browser, styled after the Roland TR-909. Program 
 - **Controls:** knobs click to 11 notches and the fader to 9. Drag, click a notch, scroll, or use the arrow keys
 - **Computer keyboard:** A–C and W–\ toggle notes, like a piano layout
 - **Share links:** the URL holds the whole loop, drums and synth included
+- **Phones:** a listening player that plays the shared loop or any of the six patterns; making loops needs a computer
 
 ## Run it
 

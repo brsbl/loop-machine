@@ -1,15 +1,18 @@
-import { useCallback, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react'
+import { useCallback, useSyncExternalStore, type ReactNode } from 'react'
 import { DRUMS, SYNTH_FIRE, type FireColor } from '../instruments'
 import type { Playhead } from '../engine/engine'
-import { CHORDS, chordFor, PRESETS } from '../session/library'
+import { CHORDS, chordFor } from '../session/library'
 import { OCTAVES, type ArpMode, type ArpRate, type Waveform } from '../session/schema'
 import { useSession, type SessionStore } from '../session/store'
-import { decodeSession, encodeSession } from '../session/url'
+import { decodeSession } from '../session/url'
 import { Fader } from './controls/Fader'
 import { Knob } from './controls/Knob'
 import { LedChoice, PlainKey } from './controls/LedButton'
 import { StepKey } from './controls/StepKey'
+import { fireVars } from './fire'
 import { Keyboard } from './Keyboard'
+import { Nameplate } from './Nameplate'
+import { PATTERN_OPTIONS, presetFor } from './patterns'
 import { TempoControl } from './TempoControl'
 import styles from './LoopMachine.module.css'
 import transport from './Transport.module.css'
@@ -21,8 +24,6 @@ interface LoopMachineProps {
   onStartStop: () => void
   onReset: () => void
 }
-
-const fireVars = (c: FireColor) => ({ '--fire-top': c.top, '--fire-bottom': c.bottom, '--fire-glow': c.glow }) as CSSProperties
 
 /** Four groups of four steps, like the 909's beat groups. */
 function StepGroups({ render }: { render: (step: number) => ReactNode }) {
@@ -55,38 +56,11 @@ const OCTAVE_OPTIONS = OCTAVES.map((o) => ({
   name: o > 0 ? 'Octave up' : o < 0 ? 'Octave down' : 'Normal octave',
 }))
 
-const PATTERN_OPTIONS = PRESETS.map((p, i) => ({ value: p.link, content: String(i + 1), name: p.name }))
-
 const CHORD_OPTIONS = CHORDS.map((c) => ({ value: c.name, content: c.name, name: c.name }))
 
 const undoIcon = (
   <svg viewBox="0 0 20 14" aria-hidden>
     <path d="M7 2 L3 6 L7 10 M3 6 H12 A5 4 0 0 1 12 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
-
-/**
- * Makes the wordmark look cut into the panel: a shadow inside each stroke
- * along its upper wall, and light catching the lower lip just outside it.
- */
-const carvedFilter = (
-  <svg className={styles.defs} aria-hidden>
-    <filter id="carved" x="-5%" y="-20%" width="110%" height="140%">
-      <feOffset in="SourceAlpha" dy="2.2" result="shifted" />
-      <feGaussianBlur in="shifted" stdDeviation="0.9" result="shiftedSoft" />
-      <feComposite in="SourceAlpha" in2="shiftedSoft" operator="out" result="upperWall" />
-      <feFlood floodColor="#05070d" floodOpacity="0.85" />
-      <feComposite in2="upperWall" operator="in" result="wallShadow" />
-      <feComposite in="wallShadow" in2="SourceGraphic" operator="over" result="cut" />
-      <feOffset in="SourceAlpha" dy="1.2" result="lowered" />
-      <feComposite in="lowered" in2="SourceAlpha" operator="out" result="lowerLip" />
-      <feFlood floodColor="#fff" floodOpacity="0.95" />
-      <feComposite in2="lowerLip" operator="in" result="lipLight" />
-      <feMerge>
-        <feMergeNode in="lipLight" />
-        <feMergeNode in="cut" />
-      </feMerge>
-    </filter>
   </svg>
 )
 
@@ -110,8 +84,7 @@ export function LoopMachine({ store, playhead, isPlaying, onStartStop, onReset }
   const { dispatch } = store
   const now = playhead.step
   // A pattern's LED stays lit until you change something.
-  const link = encodeSession(session)
-  const preset = PRESETS.find((p) => p.link === link)
+  const preset = presetFor(session)
 
   const toggleSynthStep = useCallback((step: number) => dispatch({ type: 'toggleSynthStep', step }), [dispatch])
   const toggleNote = useCallback((note: string) => dispatch({ type: 'toggleNote', note }), [dispatch])
@@ -120,11 +93,7 @@ export function LoopMachine({ store, playhead, isPlaying, onStartStop, onReset }
     <div className={styles.device}>
       <div className={styles.face}>
         <header className={styles.top}>
-          <div className={styles.nameplate}>
-            {carvedFilter}
-            <span className={styles.descriptor}>DRUM MACHINE + SYNTH</span>
-            <h1 className={styles.model}>LM-919</h1>
-          </div>
+          <Nameplate />
           <div className={styles.globals}>
             <div className={styles.pattern}>
               <LedChoice
