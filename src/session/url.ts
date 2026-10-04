@@ -109,7 +109,8 @@ export function decodeSession(payload: string | null): Session {
   const [version, bpm, ...parts] = payload.split('~')
   if (version !== LINK_VERSION) return session
 
-  session.bpm = clampBpm(Number(bpm))
+  // Plain digits only: Number('') is 0 and Number('0x7f') is 127, neither a tempo anyone typed.
+  if (/^\d{1,3}$/.test(bpm)) session.bpm = clampBpm(Number(bpm))
   for (const part of parts) {
     const [id, ...fields] = part.split('.')
     if (id === 'syn') {
@@ -141,6 +142,11 @@ export function decodeSession(payload: string | null): Session {
 export const readSessionFromLocation = (): Session =>
   decodeSession(new URLSearchParams(window.location.search).get('s') ?? PRESETS[0].link)
 
+/** Rewrites the address bar. Browsers throttle replaceState with a SecurityError; a missed rewrite is caught up by the next one. */
 export function writeSessionToLocation(session: Session): void {
-  window.history.replaceState(null, '', `${window.location.pathname}?s=${encodeSession(session)}`)
+  try {
+    window.history.replaceState(null, '', `${window.location.pathname}?s=${encodeSession(session)}`)
+  } catch {
+    // Rate-limited: the session itself is fine, only the link lags.
+  }
 }

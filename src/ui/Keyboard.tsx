@@ -6,7 +6,7 @@ interface KeyboardProps {
   held: readonly string[]
   /** The note the synth fired on the current step, if any. */
   playing: string | null
-  /** The synth's octave shift; the C labels follow it. */
+  /** The synth's octave shift; the C labels and key names follow it, while held notes stay unshifted. */
   octave: number
   onToggle: (note: string) => void
 }
@@ -36,7 +36,7 @@ export const Keyboard = memo(function Keyboard({ held, playing, octave, onToggle
             key={n.note}
             type="button"
             className={cls(styles.white, n.note)}
-            aria-label={n.note}
+            aria-label={shifted(n.note, octave)}
             aria-pressed={heldSet.has(n.note)}
             onClick={() => onToggle(n.note)}
           >
@@ -51,7 +51,7 @@ export const Keyboard = memo(function Keyboard({ held, playing, octave, onToggle
             type="button"
             className={cls(styles.black, n.note)}
             style={{ '--x': n.x } as CSSProperties}
-            aria-label={n.note}
+            aria-label={shifted(n.note, octave)}
             aria-pressed={heldSet.has(n.note)}
             onClick={() => onToggle(n.note)}
           >

@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { arpPlaysOnStep } from '../engine/arpeggiator'
 import { applyCommand } from './commands'
 import { DEFAULT_GATE } from './library'
-import { defaultSession } from './schema'
+import { ARP_RATES, defaultSession } from './schema'
 
 describe('session commands', () => {
   it('reset clears steps but keeps held notes, knobs, and tempo', () => {
@@ -45,6 +46,11 @@ describe('session commands', () => {
     s = applyCommand(s, { type: 'toggleSynthStep', step: 0 })
     s = applyCommand(s, { type: 'setNotes', notes: ['A3', 'C4'] })
     expect(s.synth.steps[0]).toBe(!DEFAULT_GATE[0])
+  })
+
+  it.each(ARP_RATES)('fills in a rhythm that plays at speed %s', (rate) => {
+    const s = applyCommand(applyCommand(defaultSession(), { type: 'setArpRate', rate }), { type: 'toggleNote', note: 'C4' })
+    expect(s.synth.steps.some((on, i) => arpPlaysOnStep(i, on, rate))).toBe(true)
   })
 
   it('leaves your synth steps alone when you already set some', () => {

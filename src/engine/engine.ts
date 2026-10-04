@@ -31,6 +31,10 @@ export class Engine {
   private session: Session | null = null
   private playhead: Playhead = STOPPED
   private pending: Array<{ time: number } & Playhead> = []
+  /** Drum hits scheduled inside the lookahead, so Stop can cancel the ones that have not started. */
+  private scheduled: Array<{ time: number; sources: AudioScheduledSourceNode[] }> = []
+  /** The start in progress while the context resumes; Stop clears it, which cancels the start. */
+  private starting: Promise<void> | null = null
   private frame = 0
   private arpCount = 0
   private lastVoice: Voice | null = null
@@ -74,21 +78,47 @@ export class Engine {
     return () => this.listeners.delete(listener)
   }
 
-  async start(): Promise<void> {
+  /** Starts playback. Calls made while the context is still resuming share one start. */
+  start(): Promise<void> {
     const g = this.graph
-    if (!g || g.clock.running) return
-    if (g.ctx.state === 'suspended') await g.ctx.resume()
+    if (!g || g.clock.running) return Promise.resolve()
+    if (this.starting) return this.starting
+    const attempt: Promise<void> = this.begin(g, () => this.starting === attempt)
+    this.starting = attempt
+    return attempt
+  }
+
+  /** Resumes the context, then runs the clock unless a Stop (or a failed resume) got there first. */
+  private async begin(g: Graph, isCurrent: () => boolean): Promise<void> {
+    let resumed = true
+    try {
+      await g.ctx.resume()
+    } catch {
+      // The browser refused (autoplay policy, closed context): stay stopped.
+      resumed = false
+    }
+    if (!isCurrent()) return
+    this.starting = null
+    if (!resumed) return
     this.arpCount = 0
     g.clock.start()
+    cancelAnimationFrame(this.frame)
     this.frame = requestAnimationFrame(this.publish)
     this.emit()
   }
 
   stop(): void {
+    this.starting = null
     const g = this.graph
     if (!g) return
     g.clock.stop()
     g.synth.releaseAll()
+    // Hits already queued in the lookahead never sound; the ones sounding fade naturally.
+    const now = g.ctx.currentTime
+    for (const hit of this.scheduled) {
+      if (hit.time > now) hit.sources.forEach((src) => src.stop(now))
+    }
+    this.scheduled = []
     this.lastVoice = null
     this.pending = []
     cancelAnimationFrame(this.frame)
@@ -112,18 +142,22 @@ export class Engine {
     const s = this.session
     if (!g || !s) return
 
+    // Only hits still ahead of the audio clock matter to Stop.
+    const now = g.ctx.currentTime
+    this.scheduled = this.scheduled.filter((hit) => hit.time > now)
     for (const drum of this.drums) {
       const strip = g.channels.get(drum.id)
       const track = s.drums[drum.id]
       if (!track?.steps[step] || !strip) continue
-      playDrum(drum.voice, g.ctx, strip.input, time, track.decay)
+      const sources = playDrum(drum.voice, g.ctx, strip.input, time, track.decay)
+      this.scheduled.push({ time, sources })
       if (drum.voice === 'kick') g.pump.duck(time)
     }
 
     let note: string | null = null
     const { synth } = s
-    // With every key let go, the last note ends on this step instead of droning on.
-    if (synth.notes.length === 0 && this.lastVoice) {
+    // With every key let go, or no gate step left that can fire, the last note ends on this step instead of droning on.
+    if (this.lastVoice && (synth.notes.length === 0 || !synth.steps.some((on, i) => arpPlaysOnStep(i, on, synth.rate)))) {
       g.synth.release(this.lastVoice, time)
       this.lastVoice = null
     }
@@ -136,6 +170,10 @@ export class Engine {
         this.arpCount++
       }
     }
+    // A hidden tab stops publishing, so drop entries already past except the latest, the one publish would show.
+    let past = 0
+    while (past < this.pending.length && this.pending[past].time <= now) past++
+    if (past > 1) this.pending.splice(0, past - 1)
     this.pending.push({ time, step, note })
   }
 

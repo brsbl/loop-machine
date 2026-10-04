@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import { applyCommand } from './commands'
+import { CHORDS, PRESETS } from './library'
 import { defaultSession } from './schema'
 import { createSessionStore } from './store'
+import { decodeSession } from './url'
 
 describe('session store undo', () => {
   it('steps back one change at a time', () => {
@@ -28,5 +31,23 @@ describe('session store undo', () => {
     expect(store.getState().drums.snare.volume).toBe(0.3)
     store.undo()
     expect(store.getState().drums.snare.volume).toBe(defaultSession().drums.snare.volume)
+  })
+
+  it('adds no undo step for commands that change nothing', () => {
+    const chord = [...CHORDS[0].notes]
+    const held = applyCommand(defaultSession(), { type: 'setNotes', notes: chord })
+    const store = createSessionStore(applyCommand(held, { type: 'reset' }))
+    let changes = 0
+    store.subscribe(() => changes++)
+    store.dispatch({ type: 'setWaveform', waveform: store.getState().synth.waveform })
+    store.dispatch({ type: 'setNotes', notes: chord })
+    store.dispatch({ type: 'reset' })
+    store.dispatch({ type: 'setBpm', bpm: store.getState().bpm })
+    expect(store.canUndo()).toBe(false)
+    expect(changes).toBe(0)
+
+    const preset = createSessionStore(decodeSession(PRESETS[0].link))
+    preset.dispatch({ type: 'loadSession', session: decodeSession(PRESETS[0].link) })
+    expect(preset.canUndo()).toBe(false)
   })
 })

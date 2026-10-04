@@ -20,7 +20,7 @@ export default tseslint.config(
     },
   },
   {
-    // The engine stays framework-free so the web app, Mixtape, and tests can share it.
+    // The engine stays framework-free so the web app and tests can share it.
     files: ['src/engine/**/*.ts'],
     rules: {
       'no-restricted-imports': ['error', { patterns: [{ group: ['react', 'react-dom', 'react/*'], message: 'The engine must not depend on React.' }] }],

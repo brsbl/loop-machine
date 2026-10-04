@@ -10,7 +10,7 @@ import {
   type Session,
   type Waveform,
 } from './schema'
-import { DEFAULT_GATE } from './library'
+import { DEFAULT_GATES } from './library'
 
 export type DrumParam = 'volume' | 'delay' | 'decay'
 
@@ -36,11 +36,11 @@ const toggleAt = (steps: boolean[], i: number): boolean[] => steps.map((on, j) =
 
 /**
  * New held notes. Holding the first key while no synth steps are set also
- * fills in a default rhythm, so the keyboard always makes a sound.
+ * fills in a default rhythm that plays at the current SPEED, so the keyboard always makes a sound.
  */
 function withNotes(session: Session, notes: Iterable<string>): Session {
   const synth = { ...session.synth, notes: normalizeNotes(notes) }
-  if (session.synth.notes.length === 0 && synth.notes.length > 0 && !synth.steps.some(Boolean)) synth.steps = [...DEFAULT_GATE]
+  if (session.synth.notes.length === 0 && synth.notes.length > 0 && !synth.steps.some(Boolean)) synth.steps = [...DEFAULT_GATES[synth.rate]]
   return { ...session, synth }
 }
 

@@ -10,6 +10,9 @@ import styles from './App.module.css'
 const PANEL_WIDTH = 1128
 const PAGE_GUTTER = 48
 
+/** How long the share link may trail the session. Browsers rate-limit address rewrites, and a knob drag changes the session many times a second. */
+const LINK_DELAY_MS = 250
+
 export function App() {
   const [store] = useState(() => createSessionStore(readSessionFromLocation()))
   const [engine] = useState(() => new Engine(DRUMS))
@@ -23,16 +26,26 @@ export function App() {
     return () => engine.dispose()
   }, [engine, store])
 
-  // The session drives both the engine and the share link.
-  useEffect(
-    () =>
-      store.subscribe(() => {
-        const session = store.getState()
-        engine.apply(session)
-        writeSessionToLocation(session)
-      }),
-    [engine, store],
-  )
+  // The session drives the engine on every change; the share link catches up once per LINK_DELAY_MS, and before the page goes away.
+  useEffect(() => {
+    let pending: ReturnType<typeof setTimeout> | undefined
+    const writeLink = () => {
+      if (pending === undefined) return
+      clearTimeout(pending)
+      pending = undefined
+      writeSessionToLocation(store.getState())
+    }
+    const unsubscribe = store.subscribe(() => {
+      engine.apply(store.getState())
+      pending ??= setTimeout(writeLink, LINK_DELAY_MS)
+    })
+    window.addEventListener('pagehide', writeLink)
+    return () => {
+      unsubscribe()
+      window.removeEventListener('pagehide', writeLink)
+      writeLink()
+    }
+  }, [engine, store])
 
   // The panel has a fixed hardware layout; scale it down to fit narrower windows, like the prototype in the proposal.
   const [zoom, setZoom] = useState(1)
